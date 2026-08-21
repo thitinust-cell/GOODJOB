@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Register - Demo Company Official</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            --bg-body:          #f8fafc;
+            --text-main:        #1e293b;
+            --text-muted:       #64748b;
+            --border-line:      #e2e8f0;
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            background: radial-gradient(circle at top right, #e2e8f0 0%, #f8fafc 100%);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            min-height: 100dvh; 
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto; 
+            margin: 0;
+            padding: 4rem 1rem 1.5rem 1rem; 
+            box-sizing: border-box;
+        }
+
+        /* --- Background Animation Layer --- */
+        .bg-container {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        .floating-icon {
+            position: absolute; color: var(--corp-blue); opacity: 0.06;
+            animation: float 12s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
+        
+        .icon-1 { top: 5%; left: 3%; font-size: 80px; }
+        .icon-2 { bottom: 5%; right: 3%; font-size: 60px; animation-delay: 2s; }
+        .icon-3 { top: 45%; right: 5%; font-size: 40px; opacity: 0.03; }
+
+        /* ---  PRO CARD STYLE & ANIMATION  --- */
+        .auth-card {
+            background: #ffffff;
+            border-radius: 16px; 
+            box-shadow: 0 20px 40px -10px rgba(0, 28, 84, 0.12);
+            width: 100%;
+            max-width: 800px; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.7);
+            margin: auto 0; 
+            
+            /* Bouncy Entrance */
+            animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+        }
+
+        @keyframes cardEntrance {
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Side Banner */
+        .side-banner {
+            background: linear-gradient(145deg, var(--corp-blue) 0%, var(--corp-blue-light) 100%);
+            color: white;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 1.5rem 1.25rem;
+            background: white;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+        }
+
+        /* --- Responsive Media Query (Tablet/Desktop) --- */
+        @media (min-width: 768px) {
+            body { 
+                padding: 2rem; 
+                align-items: center; 
+            }
+            .auth-card { 
+                flex-direction: row; 
+                min-height: 520px; 
+                border-radius: 24px;
+                box-shadow: 0 40px 80px -15px rgba(0, 28, 84, 0.12);
+                margin: auto;
+            }
+            .side-banner { padding: 2.5rem 2rem; }
+            .form-section { padding: 2rem 2.5rem; }
+            
+            .icon-1 { font-size: 160px; left: 5%; }
+            .icon-2 { font-size: 120px; right: 5%; }
+            .icon-3 { font-size: 70px; right: 10%; }
+        }
+
+        /* Logo Container */
+        .logo-container {
+            margin-bottom: 1.25rem;
+            text-align: center;
+        }
+        .logo-img {
+            height: 45px; 
+            width: auto;
+            margin: 0 auto;
+            object-fit: contain; 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        }
+        @media (min-width: 768px) {
+            .logo-img { height: 50px; }
+        }
+
+        /* Input Styling */
+        .input-group label { 
+            display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); 
+            margin-bottom: 0.3rem; margin-left: 2px; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+
+        .input-wrapper { position: relative; width: 100%; }
+        
+        .input-wrapper input {
+            width: 100%; 
+            padding: 0.65rem 2.2rem 0.65rem 2.2rem; 
+            border: 1px solid var(--border-line); 
+            border-radius: 10px;
+            background: #f8fafc; 
+            color: var(--text-main); 
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .input-wrapper input:focus { 
+            outline: none; 
+            border-color: var(--corp-blue-light); 
+            background: white;
+            box-shadow: 0 4px 15px rgba(42, 86, 198, 0.1); 
+            transform: translateY(-2px);
+        }
+
+        .input-icon { 
+            position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); 
+            color: #94a3b8; font-size: 1.1rem; pointer-events: none; 
+            transition: color 0.3s;
+        }
+        .input-wrapper input:focus ~ .input-icon { color: var(--corp-blue); }
+        
+        .toggle-password {
+            position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%);
+            color: #94a3b8; font-size: 1.1rem; cursor: pointer; transition: color 0.2s;
+            padding: 5px; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .toggle-password:hover { color: var(--corp-blue-light); }
+        .toggle-password:focus { outline: none; }
+
+        /* Requirements Checklist */
+        .req-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .req-item { 
+            font-size: 0.65rem; color: #94a3b8; display: flex; align-items: center; gap: 3px; 
+            border: 1px solid #e2e8f0; padding: 3px 8px; border-radius: 20px;
+            background: #ffffff;
+        }
+        .req-item.valid { color: #059669; background-color: #ecfdf5; border-color: #d1fae5; font-weight: 600; }
+
+        /* Submit Button */
+        .btn-primary {
+            background-color: var(--corp-blue);
+            color: white; transition: all 0.3s ease;
+            border-radius: 10px; font-weight: 700;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .btn-primary:hover:not(:disabled) { 
+            background-color: var(--corp-blue-light); 
+            box-shadow: 0 8px 20px -4px rgba(0, 28, 84, 0.25); 
+            transform: translateY(-2px);
+        }
+        .btn-primary:active:not(:disabled) { transform: scale(0.97); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Language Button */
+        .lang-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 50px;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 50;
+        }
+        .lang-btn:hover {
+            background: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* ---  PRO STAGGER ANIMATIONS  --- */
+        @keyframes typeLine {
+            to { transform: scaleX(1); }
+        }
+        @keyframes stampIn {
+            0% { opacity: 0; transform: scale(3) rotate(-20deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes flyAway {
+            0% { opacity: 0; transform: translate(-20px, 20px) scale(0.8); }
+            15% { opacity: 1; transform: translate(0, 0) scale(1.2); }
+            35% { opacity: 1; transform: translate(0, 0) scale(1.2); }
+            100% { opacity: 0; transform: translate(120px, -120px) scale(0.4); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stagger-up {
+            opacity: 0; 
+            animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        .delay-100 { animation-delay: 0.2s; }
+        .delay-200 { animation-delay: 0.3s; }
+        .delay-300 { animation-delay: 0.4s; }
+        .delay-400 { animation-delay: 0.5s; }
+        .delay-500 { animation-delay: 0.6s; }
+        .delay-600 { animation-delay: 0.7s; }
+        .delay-700 { animation-delay: 0.8s; }
+    </style>
+</head>
+<body>
+
+    <!-- Background Decoration Layer -->
+    <div class="bg-container">
+        <i class="ph-duotone ph-shield-check floating-icon icon-1"></i>
+        <i class="ph-duotone ph-lock-key floating-icon icon-2"></i>
+        <i class="ph-duotone ph-fingerprint floating-icon icon-3"></i>
+    </div>
+
+    <!-- Language Button -->
+    <div onclick="toggleLanguage()" class="lang-btn hover:bg-white transition-all delay-100">
+        <img id="lang-flag-img" src="https://flagcdn.com/w40/gb.png" alt="Flag" class="w-4 h-auto rounded-sm shadow-sm border border-slate-200">
+        <span id="lang-btn-text" class="text-[12px] md:text-[13px] font-bold text-slate-700">EN</span>
+    </div>
+
+    <!--  Premium Animated Success Modal  -->
+    <div id="success-modal" class="fixed inset-0 z-[2000] hidden items-center justify-center transition-opacity duration-300 opacity-0">
+        
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity opacity-0" id="modal-backdrop"></div>
+        
+        <!-- Animated Card -->
+        <div class="relative bg-white rounded-[32px] p-8 w-[90%] max-w-[380px] text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.4)] transform scale-95 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden" id="modal-card">
+            
+            <!-- Internet / Network Background Decor inside Card -->
+            <div class="absolute inset-0 pointer-events-none opacity-[0.03]">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" class="text-[var(--corp-blue)]" />
+                </svg>
+            </div>
+
+            <!-- Animation Scene (Document + Network + Plane) -->
+            <div class="relative h-36 w-full flex justify-center items-center mb-2 mt-2">
+                
+                <!-- Internet Wave (Ping / Signal) -->
+                <div class="absolute w-28 h-28 bg-blue-50 border border-blue-100 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                <div class="absolute w-20 h-20 bg-blue-100/50 rounded-full animate-pulse"></div>
+
+                <!-- Paper Plane (Data Transmission) -->
+                <i class="ph-fill ph-paper-plane-tilt text-[var(--corp-blue)] text-5xl absolute z-20 opacity-0" style="animation: flyAway 2.5s 1.2s forwards ease-in-out;"></i>
+
+                <!-- Document Filling Animation -->
+                <div class="relative z-10 w-16 h-[76px] bg-white border-[3px] border-slate-200 rounded-[10px] shadow-sm p-2 flex flex-col gap-1.5 transform">
+                    <div class="h-1.5 bg-[var(--corp-blue-light)] rounded-full w-full animate-[typeLine_0.4s_0.2s_forwards] scale-x-0 origin-left"></div>
+                    <div class="h-1 bg-slate-200 rounded-full w-[90%] animate-[typeLine_0.4s_0.5s_forwards] scale-x-0 origin-left"></div>
+                    <div class="h-1 bg-slate-200 rounded-full w-[70%] animate-[typeLine_0.4s_0.8s_forwards] scale-x-0 origin-left"></div>
+
+                    <!-- Verified Stamp -->
+                    <div class="absolute -bottom-4 -right-4 bg-white rounded-full p-0.5 opacity-0 scale-50" style="animation: stampIn 0.5s 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                        <i class="ph-fill ph-check-circle text-green-500 text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Texts -->
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2 tracking-tight relative z-10" data-i18n="modal_title">ลงทะเบียนสำเร็จ!</h2>
+            <p class="text-[13.5px] text-slate-500 mb-6 leading-relaxed relative z-10">
+                <span data-i18n="modal_desc">บัญชีของคุณกำลังรอการตรวจสอบ<br><span class="text-orange-500 font-bold">กรุณารอแอดมินอนุมัติสิทธิ์ก่อนเข้าใช้งาน</span><br>ระบบจะพากลับไปหน้าล็อคอินใน</span> 
+            </p>
+            
+            <!-- Circular Countdown 5 Seconds -->
+            <div class="relative w-16 h-16 mx-auto mb-6 z-10">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <!-- พื้นหลังวงแหวน -->
+                    <path class="text-slate-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <!-- วงแหวนนับถอยหลัง -->
+                    <path class="text-green-500 transition-all duration-1000 ease-linear" stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke="currentColor" fill="none" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" id="circle-progress" />
+                </svg>
+                <!-- ตัวเลขตรงกลาง -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span id="countdown-text" class="text-xl font-bold text-slate-700">5</span>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="skipToLogin()" class="relative z-10 group inline-flex items-center justify-center gap-2 text-sm font-bold text-slate-500 hover:text-[var(--corp-blue)] transition-colors bg-white hover:bg-blue-50 px-5 py-3 rounded-xl border border-slate-200 hover:border-blue-200 w-full shadow-sm active:scale-95">
+                <span data-i18n="modal_btn_skip">ไปหน้าล็อคอินทันที</span>
+                <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Auth Card -->
+    <div class="auth-card">
+        
+        <!-- Left Banner -->
+        <div class="side-banner w-full md:w-5/12">
+            <div class="relative z-10 flex flex-col items-center stagger-up delay-100">
+                <i class="ph-duotone ph-user-plus text-5xl md:text-6xl mb-2 md:mb-4 opacity-40"></i>
+                <h1 class="text-xl md:text-2xl font-bold mb-1.5 md:mb-2 tracking-tight" data-i18n="title">ลงทะเบียนใช้งาน</h1>
+                <p class="text-[12px] md:text-sm text-blue-50 opacity-90 max-w-[220px] mx-auto hidden md:block leading-relaxed" data-i18n="subtitle">สร้างบัญชีเพื่อเข้าใช้งานระบบขอเข้าพื้นที่ปฏิบัติงาน</p>
+            </div>
+            <i class="ph-bold ph-shield-check absolute -bottom-10 -left-10 text-[180px] opacity-10 rotate-12 hidden md:block"></i>
+        </div>
+
+        <!-- Right Form Section -->
+        <div class="form-section w-full md:w-7/12">
+            
+            <!-- Logo -->
+            <div class="logo-container stagger-up delay-100">
+                <img src="{{ BRAND_LOGO_URL }}" alt="Demo Company Logo" class="logo-img" onerror="this.style.display='none'">
+            </div>
+
+            <h2 class="text-base md:text-lg font-bold text-slate-800 mb-4 md:mb-5 text-center stagger-up delay-200" data-i18n="form_title">ข้อมูลผู้ใช้งาน</h2>
+
+            <form id="register-form" class="max-w-md mx-auto w-full" onsubmit="event.preventDefault(); handleRegister();">
+                
+                <!-- Username -->
+                <div class="input-group mb-3 md:mb-4 stagger-up delay-300">
+                    <label data-i18n="lbl_username">ชื่อผู้ใช้งาน (Username)</label>
+                    <div class="input-wrapper group">
+                        <input type="text" id="username" data-i18n-placeholder="ph_username" placeholder="ระบุชื่อผู้ใช้งาน" required>
+                        <i class="ph-bold ph-user input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                    </div>
+                </div>
+
+                <!-- ช่องกรอกอีเมล  -->
+                <div class="input-group mb-3 md:mb-4 stagger-up delay-300">
+                    <label data-i18n="lbl_email">อีเมล (Email)</label>
+                    <div class="input-wrapper group">
+                        <input type="email" id="email" data-i18n-placeholder="ph_email" placeholder="example@company.com" required>
+                        <i class="ph-bold ph-envelope-simple input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                    </div>
+                </div>
+
+                <!-- First & Last Name -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 sm:gap-x-3 mb-3 md:mb-4 stagger-up delay-400">
+                    <div class="input-group">
+                        <label data-i18n="lbl_firstname">ชื่อ (First Name)</label>
+                        <div class="input-wrapper group">
+                            <input type="text" id="firstname" data-i18n-placeholder="ph_firstname" placeholder="ชื่อจริง" required>
+                            <i class="ph-bold ph-user-circle input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="lbl_lastname">นามสกุล (Last Name)</label>
+                        <div class="input-wrapper group">
+                            <input type="text" id="lastname" data-i18n-placeholder="ph_lastname" placeholder="นามสกุล" required>
+                            <i class="ph-bold ph-identification-card input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="input-group mb-3 md:mb-4 stagger-up delay-400">
+                    <label data-i18n="lbl_phone">เบอร์โทรศัพท์ (Phone Number)</label>
+                    <div class="input-wrapper group">
+                        <input type="tel" id="phone" data-i18n-placeholder="ph_phone" placeholder="ระบุเบอร์โทรศัพท์" required oninput="checkMatch()">
+                        <i class="ph-bold ph-phone input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="input-group mb-3 md:mb-4 stagger-up delay-500">
+                    <label data-i18n="lbl_password">รหัสผ่าน (Password)</label>
+                    <div class="input-wrapper group">
+                        <input type="password" id="password" data-i18n-placeholder="ph_password" placeholder="ตั้งรหัสผ่าน" required oninput="checkPasswordStrength()">
+                        <i class="ph-bold ph-lock-key input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                        <i class="ph-bold ph-eye toggle-password" onclick="toggleVisibility('password', this)"></i>
+                    </div>
+                    <div class="req-list">
+                        <div id="req-len" class="req-item"><i class="ph-bold ph-circle"></i> 6+</div>
+                        <div id="req-letter" class="req-item"><i class="ph-bold ph-circle"></i> A-z</div>
+                        <div id="req-num" class="req-item"><i class="ph-bold ph-circle"></i> 0-9</div>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="input-group mb-5 stagger-up delay-600">
+                    <label data-i18n="lbl_confirm">ยืนยันรหัสผ่าน (Confirm Password)</label>
+                    <div class="input-wrapper group">
+                        <input type="password" id="confirm_password" data-i18n-placeholder="ph_confirm" placeholder="ยืนยันอีกครั้ง" required oninput="checkMatch()">
+                        <i class="ph-bold ph-check-circle input-icon group-focus-within:text-[var(--corp-blue)] transition-colors"></i>
+                        <i class="ph-bold ph-eye toggle-password" onclick="toggleVisibility('confirm_password', this)"></i>
+                    </div>
+                    <div id="match-msg" class="text-[11px] mt-1.5 pl-1 min-h-[16px]"></div>
+                </div>
+
+                <button type="submit" id="btn-submit" class="w-full btn-primary flex items-center justify-center gap-2 transform active:scale-[0.97] stagger-up delay-700" disabled>
+                    <i class="ph-bold ph-user-plus text-lg"></i>
+                    <span id="btn-text" data-i18n="btn_register">สมัครสมาชิก</span>
+                </button>
+            </form>
+
+            <div class="text-center mt-6 stagger-up delay-700">
+                <p class="text-[12px] text-slate-400 font-bold mb-1" data-i18n="footer_text">มีบัญชีผู้ใช้งานแล้ว?</p>
+                <a href="login.html" class="text-sm font-extrabold text-blue-600 hover:text-blue-800 transition-transform hover:-translate-y-0.5 inline-block py-1" data-i18n="btn_login">
+                    เข้าสู่ระบบ (Login)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay Layer -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/90 z-[2000] hidden flex-col items-center justify-center">
+        <div class="w-10 h-10 border-4 border-slate-100 border-t-[var(--corp-blue)] rounded-full animate-spin mb-3"></div>
+        <div class="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Processing</div>
+    </div>
+
+    <script>
+        // ตรวจสอบว่าเปิดผ่าน Canvas / File หรือไม่
+        const isPreviewMode = window.location.hostname.includes('usercontent.goog') || 
+                              ['blob:', 'about:', 'file:'].includes(window.location.protocol);
+
+        //  ลิงก์ Web App URL  
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxUkrSNwaQNUrCBRvUoYMhCSun6IJ9ARejqbkqITJnSs3i2_uzzYiA-5LdkMMVt9Pk/exec";
+
+        const translations = {
+            th: {
+                title: "ลงทะเบียนใช้งาน",
+                subtitle: "สร้างบัญชีเพื่อเข้าใช้งานระบบขอเข้าพื้นที่ปฏิบัติงาน",
+                form_title: "ข้อมูลผู้ใช้งาน",
+                lbl_username: "ชื่อผู้ใช้งาน (Username)",
+                ph_username: "ระบุชื่อผู้ใช้งาน",
+                lbl_email: "อีเมล (Email)",
+                ph_email: "example@company.com",
+                lbl_firstname: "ชื่อ",
+                ph_firstname: "ชื่อจริง",
+                lbl_lastname: "นามสกุล",
+                ph_lastname: "นามสกุล",
+                lbl_phone: "เบอร์โทรศัพท์ (Phone Number)",
+                ph_phone: "ระบุเบอร์โทรศัพท์",
+                lbl_password: "รหัสผ่าน",
+                ph_password: "ตั้งรหัสผ่าน",
+                lbl_confirm: "ยืนยันรหัสผ่าน",
+                ph_confirm: "ยืนยันรหัสผ่านอีกครั้ง",
+                btn_register: "สมัครสมาชิก",
+                footer_text: "มีบัญชีผู้ใช้งานแล้ว?",
+                btn_login: "เข้าสู่ระบบ (Login)",
+                modal_title: "ลงทะเบียนสำเร็จ!",
+                modal_desc: "บัญชีของคุณกำลังรอการตรวจสอบ<br><span class='text-orange-500 font-bold'>กรุณารอแอดมินอนุมัติสิทธิ์ก่อนเข้าใช้งาน</span><br>ระบบจะพากลับไปหน้าล็อคอินใน",
+                modal_btn_skip: "ไปหน้าล็อคอินทันที",
+                req_len: "6 ตัวขึ้นไป",
+                req_letter: "มีตัวอักษร",
+                req_num: "มีตัวเลข",
+                match_success: "รหัสผ่านตรงกัน",
+                match_error: "รหัสผ่านไม่ตรงกัน",
+                reg_error: "เกิดข้อผิดพลาดในการลงทะเบียน"
+            },
+            en: {
+                title: "Register",
+                subtitle: "Sign up for access to station request portal",
+                form_title: "User Information",
+                lbl_username: "Username",
+                ph_username: "Pick a username",
+                lbl_email: "Email Address",
+                ph_email: "example@company.com",
+                lbl_firstname: "First Name",
+                ph_firstname: "First Name",
+                lbl_lastname: "Last Name",
+                ph_lastname: "Last Name",
+                lbl_phone: "Phone Number",
+                ph_phone: "Enter phone number",
+                lbl_password: "Password",
+                ph_password: "Create password",
+                lbl_confirm: "Confirm Password",
+                ph_confirm: "Repeat password",
+                btn_register: "Sign Up",
+                footer_text: "Already have an account?",
+                btn_login: "Login here",
+                modal_title: "Registration Successful!", 
+                modal_desc: "Your account is pending review.<br><span class='text-orange-500 font-bold'>Please wait for admin approval before logging in.</span><br>Redirecting to login in",
+                modal_btn_skip: "Login now",
+                req_len: "Min. 6 chars",
+                req_letter: "Letters",
+                req_num: "Numbers",
+                match_success: "Passwords match",
+                match_error: "Not match",
+                reg_error: "Registration failed"
+            }
+        };
+
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('site_lang', lang);
+            document.getElementById('lang-btn-text').innerText = lang === 'th' ? 'EN' : 'TH';
+            document.getElementById('lang-flag-img').src = lang === 'th' ? 'https://flagcdn.com/w40/gb.png' : 'https://flagcdn.com/w40/th.png';
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
+            });
+            checkPasswordStrength();
+        }
+
+        function toggleLanguage() { setLanguage(currentLang === 'th' ? 'en' : 'th'); }
+
+        function toggleVisibility(inputId, icon) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('ph-eye');
+            icon.classList.toggle('ph-eye-slash');
+        }
+
+        let isPwValid = false, isMatch = false;
+
+        function checkPasswordStrength() {
+            const pw = document.getElementById('password').value;
+            const hasLen = pw.length >= 6, hasLetter = /[a-zA-Zก-๙]/.test(pw), hasNum = /\d/.test(pw);
+            
+            const updateItem = (id, isValid, textKey) => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.className = 'req-item' + (isValid ? ' valid' : '');
+                el.innerHTML = `<i class="ph-${isValid ? 'fill ph-check-circle' : 'bold ph-circle'}"></i> ${translations[currentLang][textKey]}`;
+            };
+
+            updateItem('req-len', hasLen, 'req_len');
+            updateItem('req-letter', hasLetter, 'req_letter');
+            updateItem('req-num', hasNum, 'req_num');
+            
+            isPwValid = hasLen && hasLetter && hasNum;
+            checkMatch();
+        }
+
+        function checkMatch() {
+            const pw = document.getElementById('password').value;
+            const cf = document.getElementById('confirm_password').value;
+            const msg = document.getElementById('match-msg');
+            
+            if (!cf) { 
+                msg.innerText = ''; 
+                isMatch = false; 
+            } else if (pw === cf) { 
+                msg.innerHTML = `<span class="text-green-600 font-bold">✓ ${translations[currentLang].match_success}</span>`; 
+                isMatch = true; 
+            } else { 
+                msg.innerHTML = `<span class="text-red-500 font-bold">✕ ${translations[currentLang].match_error}</span>`; 
+                isMatch = false; 
+            }
+            
+            const btn = document.getElementById('btn-submit');
+            const u = document.getElementById('username').value;
+            const em = document.getElementById('email').value; // รับค่าอีเมล
+            const f = document.getElementById('firstname').value;
+            const l = document.getElementById('lastname').value;
+            const p = document.getElementById('phone').value;
+            
+            btn.disabled = !(u && em && f && l && p && isPwValid && isMatch);
+        }
+
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', checkMatch));
+
+        async function handleRegister() {
+            const btn = document.getElementById('btn-submit');
+            const overlay = document.getElementById('loading-overlay');
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim(); // 🌟 เก็บค่าอีเมล
+            const firstname = document.getElementById('firstname').value.trim();
+            const lastname = document.getElementById('lastname').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const full_name = firstname + ' ' + lastname;
+
+            btn.disabled = true; 
+            overlay.style.display = 'flex';
+
+            try {
+                if (isPreviewMode) {
+                    console.log("[Preview Mode] Network conditions simulated. Moving to success.");
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        showSuccessModal();
+                    }, 1000);
+                    return;
+                }
+
+                const apiUrl = '/api/register';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email, //  ส่งอีเมลไป Python
+                        password: password,
+                        full_name: full_name,
+                        phone: phone
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    //  ส่งอีเมลแจ้งเตือนแอดมิน ผ่าน GAS 
+                    try {
+                        const formData = new FormData();
+                        formData.append('action', 'notify_admin');
+                        formData.append('full_name', full_name);
+                        formData.append('user_email', email);
+                        formData.append('admin_emails', result.admin_emails); // 🌟 เพิ่มบรรทัดนี้: ส่งอีเมลแอดมินทั้งหมดไปให้ GAS 🌟
+                        formData.append('lang', currentLang);
+                        
+                        fetch(GAS_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+                    } catch(e) { console.error("Email notification error:", e); }
+
+                    overlay.style.display = 'none';
+                    showSuccessModal();
+                } else {
+                    overlay.style.display = 'none';
+                    alert(result.message || translations[currentLang].reg_error);
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Registration Error:', error);
+                overlay.style.display = 'none';
+                
+                if (isPreviewMode) {
+                    showSuccessModal();
+                } else {
+                    alert(translations[currentLang].reg_error);
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        let redirectTimer;
+        function showSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            const card = document.getElementById('modal-card');
+            const countText = document.getElementById('countdown-text');
+            const circleProgress = document.getElementById('circle-progress');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Fade In Backdrop and Card
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                if (backdrop) backdrop.classList.remove('opacity-0');
+                if (card) {
+                    card.classList.remove('scale-95', 'opacity-0');
+                    card.classList.add('scale-100', 'opacity-100');
+                }
+            }, 10);
+            
+            let time = 5;
+            if(circleProgress) circleProgress.style.strokeDashoffset = 0; // เต็มวงที่ 0
+            
+            redirectTimer = setInterval(() => {
+                time--;
+                if(countText) countText.innerText = time;
+                
+                if(circleProgress) {
+                    // วงกลมความยาว 100 หดลงเรื่อยๆ (Dash Offset 0 คือเต็ม, 100 คือหมด)
+                    const offset = 100 - (time / 5 * 100);
+                    circleProgress.style.strokeDashoffset = offset;
+                }
+                
+                if (time <= 0) {
+                    clearInterval(redirectTimer);
+                    executeRedirect();
+                }
+            }, 1000);
+        }
+
+        function skipToLogin() {
+            if(redirectTimer) clearInterval(redirectTimer);
+            executeRedirect();
+        }
+
+        function executeRedirect() {
+            if (isPreviewMode) {
+                console.log("[Preview Mode] Redirect to Login intercepted.");
+                window.location.reload();
+                return;
+            }
+            window.location.href = 'login.html'; 
+        }
+
+        document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
+    </script>
+</body>
+</html>

@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <!--  
+      ส่วน: การตั้งค่าพื้นฐานของหน้าเว็บ
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Access Site Request Form (FR-018) - Demo Company Official</title>
+    
+    <!-- 
+      ส่วน: ไลบรารีภายนอก (CSS Framework, Fonts, Icons) 
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            --corp-red:         #D9232A; 
+            
+            --bg-body:          #f4f6f9;
+            --text-main:        #333333;
+            --text-muted:       #666666;
+            --border-color:     #dce2f0;
+            
+            --radius-md:        12px;
+            --radius-xl:        20px;
+            --radius-pill:      50px;
+            
+            --shadow-soft:      0 8px 24px -6px rgba(0, 28, 84, 0.08);
+            --shadow-hover:     0 12px 32px -4px rgba(0, 28, 84, 0.12);
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+            position: relative; /* ให้ปุ่ม absolute อ้างอิงจากกรอบ body */
+        }
+
+        /* SECTION: Background Animation */
+        .bg-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .floating-icon {
+            position: absolute;
+            color: var(--corp-blue);
+            opacity: 0.03;
+        }
+        
+        .icon-1 { top: 8%; left: 3%; font-size: 80px; transform: rotate(5deg); }
+        .icon-2 { bottom: 12%; right: 2%; font-size: 70px; transform: rotate(-10deg); }
+        .icon-3 { top: 35%; right: 5%; font-size: 50px; opacity: 0.02; }
+        .icon-4 { bottom: 5%; left: 5%; font-size: 60px; opacity: 0.02; }
+
+        @media (min-width: 768px) {
+            .icon-1 { font-size: 200px; }
+            .icon-2 { font-size: 160px; }
+            .icon-3 { font-size: 100px; right: 10%; }
+            .icon-4 { font-size: 120px; left: 15%; }
+        }
+
+        /* SECTION: Header Styles */
+        .header-centered {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-top: 1rem;
+            position: relative;
+        }
+        @media (min-width: 768px) {
+            .header-centered { margin-bottom: 3rem; padding-top: 2rem; }
+        }
+
+        .header-logo-img {
+            height: 45px;
+            width: auto;
+            margin: 0 auto 1rem auto;
+            display: block;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+        }
+        @media (min-width: 768px) {
+            .header-logo-img { height: 60px; margin-bottom: 1.5rem; }
+        }
+
+        .header-title {
+            font-size: 1.5rem; font-weight: 800; color: var(--corp-blue);
+            margin-bottom: 0.5rem; letter-spacing: -0.5px; line-height: 1.2;
+        }
+        @media (min-width: 768px) {
+            .header-title { font-size: 2.25rem; }
+        }
+
+        .header-subtitle {
+            font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;
+            padding: 0 1rem;
+        }
+        @media (min-width: 768px) {
+            .header-subtitle { font-size: 1rem; margin-bottom: 2rem; }
+        }
+        
+        .header-pill {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: #fff;
+            padding: 0.4rem 0.5rem 0.4rem 0.75rem; 
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap; 
+            justify-content: center;
+        }
+        @media (min-width: 768px) {
+            .header-pill { gap: 0.75rem; padding: 0.5rem 0.5rem 0.5rem 1rem; }
+        }
+        .pill-tag {
+            background: #eef2ff; color: var(--corp-blue);
+            font-weight: 700; font-size: 0.7rem;
+            padding: 4px 8px; border-radius: 6px;
+        }
+        .pill-divider { width: 1px; height: 20px; background: #cbd5e1; display: none; }
+        @media (min-width: 480px) { .pill-divider { display: block; } }
+
+        .pill-label { font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .pill-date { font-size: 0.9rem; font-weight: 700; color: var(--corp-blue-light); font-family: monospace; margin-right: 0.5rem; }
+
+        /* SECTION: Card & Form Layout */
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.25rem 1rem; 
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid #fff;
+            transition: transform 0.2s;
+        }
+        @media (min-width: 768px) {
+            .form-card { padding: 2rem 2.5rem; margin-bottom: 2rem; border-radius: var(--radius-xl); }
+        }
+
+        .form-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+        .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+        @media (min-width: 768px) { .section-header { gap: 12px; margin-bottom: 1.5rem; } }
+
+        .icon-circle {
+            width: 32px; height: 32px;
+            background: #f0f4ff; color: var(--corp-blue);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        @media (min-width: 768px) {
+            .icon-circle { width: 44px; height: 44px; font-size: 1.5rem; border-radius: 12px; }
+        }
+
+        .section-title { font-size: 1.05rem; font-weight: 700; color: var(--corp-blue); }
+        @media (min-width: 768px) { .section-title { font-size: 1.25rem; } }
+
+        /* SECTION: Form Inputs */
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; margin-left: 2px; }
+        
+        input[type="text"], input[type="tel"], .custom-select {
+            width: 100%; padding: 0.6rem 0.8rem;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            transition: all 0.2s;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px !important; 
+        }
+        @media (min-width: 768px) {
+            input[type="text"], input[type="tel"], .custom-select {
+                padding: 0.7rem 1rem;
+                font-size: 16px !important;
+                border-radius: var(--radius-md);
+            }
+        }
+        input[type="text"]:focus, input[type="tel"]:focus, .custom-select:focus {
+            outline: none; border-color: var(--corp-blue-light);
+            box-shadow: 0 0 0 3px rgba(42, 86, 198, 0.1);
+        }
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1em 1em;
+            padding-right: 1.75rem;
+        }
+
+        /* SECTION: Radio & Checkbox Cards */
+        .selection-card { position: relative; cursor: pointer; display: block; }
+        .selection-card input { position: absolute; opacity: 0; width: 0; height: 0; } 
+        .selection-card .card-content {
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-muted);
+            border-radius: var(--radius-pill);
+            padding: 0.5rem 0.75rem;
+            display: flex; justify-content: center; align-items: center; gap: 4px;
+            transition: all 0.2s; cursor: pointer; font-weight: 500;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        @media (min-width: 768px) {
+            .selection-card .card-content { padding: 0.6rem 1.5rem; font-size: 0.95rem; gap: 8px; }
+        }
+
+        .selection-card:hover .card-content { border-color: var(--corp-blue-light); background: #f8fbff; }
+        .selection-card input:checked + .card-content {
+            background: var(--corp-blue);
+            border-color: var(--corp-blue);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 28, 84, 0.2);
+        }
+
+        /* --- HOT WORK RISK ANIMATION & STYLES --- */
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px) scale(1.05); }
+        }
+        .risk-icon-anim { animation: gentle-bounce 2s ease-in-out infinite; }
+
+        .risk-card input:not(:checked) + .card-content {
+            border-color: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            background-color: #ffffff !important;
+        }
+        .risk-card input:not(:checked) + .card-content.risk-yes:hover {
+            border-color: #fca5a5 !important;
+            color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        .risk-card input:not(:checked) + .card-content.risk-no:hover {
+            border-color: #6ee7b7 !important;
+            color: #10b981 !important;
+            background-color: #f0fdf4 !important;
+        }
+
+        .risk-card input:checked + .card-content.risk-yes {
+            border: 2px solid #ef4444 !important;
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25) !important;
+            font-weight: 800 !important;
+            color: #ef4444 !important;
+            background-color: #fff !important;
+            transform: scale(1.05);
+        }
+        .risk-card input:checked + .card-content.risk-no {
+            border: 2px solid #10b981 !important;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25) !important;
+            font-weight: 800 !important;
+            color: #10b981 !important;
+            background-color: #fff !important;
+            transform: scale(1.05);
+        }
+
+        /* SECTION: Area Grid */
+        .area-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        @media (min-width: 768px) { .area-grid { gap: 8px; } }
+        
+        .area-card .card-content { 
+            padding: 0.4rem 0.6rem; border-radius: var(--radius-md); 
+            border: 1px dashed #cbd5e1; background: #fff; color: var(--text-muted); font-size: 0.8rem;
+        }
+        @media (min-width: 768px) {
+            .area-card .card-content { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+        }
+        .area-card input:checked + .card-content {
+            background: #f0f4ff; border: 1px solid var(--corp-blue); color: var(--corp-blue); font-weight: 700;
+        }
+        
+        /* Building Tabs */
+        .bldg-tab {
+            flex: 1; text-align: center; padding: 0.6rem 0.5rem; font-weight: 700; font-size: 0.85rem;
+            border-radius: var(--radius-md); color: var(--text-muted); transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        @media (min-width: 768px) { .bldg-tab { padding: 0.7rem 1rem; font-size: 0.95rem; } }
+        .bldg-tab:hover:not(.active) { background: #e2e8f0; }
+        .bldg-tab.active { background: #fff; color: var(--corp-blue); box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #fff; }
+
+        /* SECTION: Signature Box */
+        .sig-grid {
+            display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.5rem;
+            margin-top: 1rem; max-width: 800px; margin-left: auto; margin-right: auto;
+        }
+        @media(min-width: 768px) { .sig-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; } }
+
+        .sig-box-dashed {
+            border: 2px dashed #fca5a5;
+            background-color: #fff;
+            border-radius: 16px;
+            height: 120px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: crosshair; transition: all 0.2s; position: relative; overflow: hidden;
+            touch-action: none; 
+        }
+        @media (min-width: 768px) { .sig-box-dashed { height: 140px; } }
+
+        .sig-box-dashed:hover { background-color: #fff5f5; border-color: var(--corp-red); }
+        .sig-icon-center { font-size: 24px; color: #fca5a5; margin-bottom: 8px; }
+        .sig-placeholder { color: #94a3b8; font-size: 0.8rem; }
+        
+        canvas#signature-pad { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; 
+            touch-action: none;
+        }
+
+        .sig-label-area { text-align: center; margin-top: 0.8rem; border-top: 1px solid #e2e8f0; padding-top: 0.6rem; width: 90%; margin-left: auto; margin-right: auto; }
+        .sig-role { font-weight: 700; color: #333; font-size: 0.9rem; }
+        .sig-sub { color: #666; font-size: 0.8rem; }
+        .sig-date { color: #999; font-size: 0.75rem; margin-top: 2px; display: block; }
+
+        /* SECTION: Table Styles */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0 0.25rem; min-width: 500px; }
+        .modern-table th { 
+            color: var(--text-muted); font-size: 0.75rem; font-weight: 600; 
+            padding: 0.6rem 0.75rem; text-align: left; 
+        }
+        @media (min-width: 768px) { .modern-table th { font-size: 0.85rem; padding: 0.75rem 1rem; } }
+        
+        .modern-table td { background: #f4f6f9; padding: 0.25rem 0.5rem; }
+        .modern-table tr td:first-child { border-top-left-radius: 0.75rem; border-bottom-left-radius: 0.75rem; padding-left: 0.5rem; }
+        .modern-table tr td:last-child { border-top-right-radius: 0.75rem; border-bottom-right-radius: 0.75rem; padding-right: 0.5rem; }
+        .modern-table input { background: transparent; border: none; padding: 0.4rem 0.5rem; border-radius: 0.5rem; width: 100%; font-family: 'Sarabun'; font-size: 14px !important; }
+        .modern-table input:focus { background: #fff; box-shadow: inset 0 0 0 1px var(--corp-blue-light); }
+
+        /* SECTION: Loading Overlay */
+        #loading-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        
+        /* VALIDATION MESSAGE STYLE */
+        .validation-msg {
+            color: #ef4444;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: fadeInMsg 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .validation-msg::before {
+            content: '!';
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+        @keyframes fadeInMsg { 
+            0% { opacity: 0; transform: translateY(-4px); } 
+            100% { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes shake { 
+            0%, 100% { transform: translateX(0); } 
+            25% { transform: translateX(-4px); } 
+            75% { transform: translateX(4px); } 
+        }
+
+        .input-error { 
+            border-color: #ef4444 !important; 
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important; 
+            background-color: #fef2f2 !important; 
+            animation: shake 0.3s ease-in-out;
+        }
+
+        .input-error-container {
+            border-color: #ef4444 !important; 
+            background-color: #fef2f2 !important;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        /* Buttons Style */
+        .btn-top-action {
+            position: absolute; top: 12px;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            padding: 0.4rem 0.6rem; border-radius: 50px;
+            color: var(--text-muted); font-size: 0.75rem; font-weight: 700;
+            border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s; text-decoration: none;
+            z-index: 50; 
+        }
+        @media (min-width: 768px) {
+            .btn-top-action { position: fixed; top: 20px; padding: 0.5rem 1rem; font-size: 0.85rem; border-color: #fff; }
+        }
+        .btn-top-action:hover { color: var(--corp-blue); box-shadow: 0 6px 16px rgba(0,0,0,0.08); background: #fff; cursor: pointer; }
+        
+        .btn-top-action.left-4 { left: 12px; }
+        .btn-top-action.right-4 { right: 12px; }
+        @media (min-width: 768px) {
+            .btn-top-action.left-4 { left: 24px; }
+            .btn-top-action.right-4 { right: 24px; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-up { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; } .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; } .delay-500 { animation-delay: 0.5s; } .delay-600 { animation-delay: 0.6s; }
+        .delay-700 { animation-delay: 0.7s; }
+        
+        /* Modal Style */
+        .modal-overlay { background: rgba(0, 28, 84, 0.6); backdrop-filter: blur(8px); }
+        .modal-content { transform: scale(0.95); opacity: 0; transition: all 0.3s ease; }
+        .modal-content.show { transform: scale(1); opacity: 1; }
+
+        /* Worker Row (NEW) */
+        .worker-row .form-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .worker-row .form-input {
+            width: 100%; padding: 0.5rem 0.7rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px !important;
+            transition: all 0.2s;
+        }
+        .worker-row .form-input:focus {
+            outline: none; border-color: var(--corp-blue-light); background: #fff;
+            box-shadow: 0 0 0 3px rgba(42, 86, 198, 0.1);
+        }
+
+        /* SECTION: File Dropzone (Google-Drive style) */
+        .dropzone {
+            border: 2px dashed #cbd5e1;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            padding: 0.85rem 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .dropzone:hover {
+            border-color: var(--corp-blue-light);
+            background-color: #f0f4ff;
+        }
+        .dropzone.dropzone-dragover {
+            border-color: var(--corp-blue);
+            background-color: #eaf0ff;
+            box-shadow: 0 0 0 3px rgba(42, 86, 198, 0.12);
+            transform: scale(1.01);
+        }
+        .dropzone.dropzone-error {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        .dropzone-empty {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            pointer-events: none;
+        }
+        .dropzone-filled {
+            display: none; align-items: center; justify-content: space-between; gap: 8px;
+            background: #fff; border-radius: 8px; padding: 0.5rem 0.6rem;
+            border: 1px solid var(--border-color);
+        }
+        .dropzone.has-file .dropzone-empty { display: none; }
+        .dropzone.has-file .dropzone-filled { display: flex; }
+        .dropzone.has-file { cursor: default; background-color: #fff; }
+        .remove-file-btn {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="py-20 md:py-12 px-3 md:px-8"> 
+
+    <!-- LANGUAGE DATA & LOGIC -->
+    <script>
+        const translations = {
+            th: {
+                btn_dash: "Dashboard",
+                title: "Access Site Request",
+                subtitle: "แบบฟอร์มขออนุญาตเข้าพื้นที่ปฏิบัติงาน (Engineering Dept.)",
+                pill_date: "DATE REQUEST",
+                sec_req: "ข้อมูลผู้ขอ (Requester Info)",
+                lbl_firstname: "ชื่อ (First Name)",
+                lbl_lastname: "นามสกุล (Last Name)",
+                lbl_dept: "หน่วยงาน (Department)",
+                lbl_vendor: "บริษัท (Company)",
+                lbl_mobile: "เบอร์ติดต่อ (Mobile)",
+                lbl_vehicle: "ทะเบียนรถ (Vehicle Reg.)",
+                lbl_req_date: "วันที่แจ้ง (Request Date)",
+                lbl_req_time: "เวลา (Time)",
+                sec_work: "รายละเอียดงาน (Work Details)",
+                lbl_obj: "วัตถุประสงค์ (Objective)",
+                lbl_desc: "รายละเอียด (Description)",
+                lbl_cat: "ประเภทงาน (Category)",
+                lbl_risk: "ความเสี่ยง (Hot Work Risk)",
+                lbl_risk_desc: "งานที่มีความร้อน/ประกายไฟ (เชื่อม, ตัด, เจียร)",
+                sec_area: "พื้นที่ปฏิบัติงาน (Area)",
+                
+                // Add Buildings Translations
+                lbl_bldg_1: "ตึก 1",
+                lbl_bldg_2: "ตึก 2",
+                lbl_bldg_3: "ตึก 3",
+                
+                lbl_floor_1: "ชั้น 1 (Floor 1)",
+                lbl_floor_2: "ชั้น 2 (Floor 2)",
+                lbl_other_areas: "พื้นที่อื่นๆ (Other Areas)",
+                lbl_general_rooms: "รายชื่อห้องทั้งหมด",
+                lbl_add_custom_room: "ระบุห้องเพิ่มเติม (หากไม่มีในรายการ)",
+                ph_room_name: "ชื่อห้องที่ต้องการเพิ่ม...",
+                lbl_select_floor: "-- เลือกชั้นของห้อง --",
+                btn_add_room: "เพิ่ม",
+                sec_schedule: "กำหนดการ (Schedule)",
+                lbl_start: "เวลาเข้า (Start)",
+                lbl_end: "เวลาออก (Finish)",
+                sec_workers: "รายชื่อผู้ปฏิบัติงาน",
+                th_no: "#",
+                th_fname: "ชื่อ",
+                th_lname: "นามสกุล",
+                th_phone: "เบอร์โทร",
+                th_pos: "ตำแหน่ง",
+                sec_sig: "ส่วนลงนาม (Signature)",
+                sig_note: "กรุณาพิมพ์เอกสารและลงนามจริงในช่องด้านล่าง (Please sign after printing)",
+                sig_req_role: "Requester",
+                sig_req_sub: "ผู้ขอ",
+                sig_app_role: "Supervisor",
+                sig_app_sub: "ผู้อนุมัติ",
+                sig_warn: "เอกสารต้องได้รับการลงนามครบถ้วนก่อนเข้าพื้นที่",
+                btn_prev: "Preview",
+                btn_submit: "Submit Form",
+                ph_firstname: "ระบุชื่อ",
+                ph_lastname: "ระบุนามสกุล",
+                ph_dept: "ระบุสังกัด",
+                ph_vendor: "ระบุชื่อบริษัท",
+                ph_vehicle: "เช่น 1กข 1234 กทม.",
+                ph_obj: "เช่น PM ประจำปี",
+                ph_desc: "อธิบายขอบเขตงาน...",
+                ph_w_fname: "ชื่อ",
+                ph_w_lname: "นามสกุล",
+                modal_success_title: "ส่งข้อมูลสำเร็จ!",
+                modal_success_desc: "ระบบกำลังนำท่านไปยังหน้ารออนุมัติ"
+            },
+            en: {
+                btn_dash: "Dashboard",
+                title: "Access Site Request",
+                subtitle: "Access Site Request Form (Engineering Dept.)",
+                pill_date: "DATE REQUEST",
+                sec_req: "Requester Information",
+                lbl_firstname: "First Name",
+                lbl_lastname: "Last Name",
+                lbl_dept: "Department",
+                lbl_vendor: "Company",
+                lbl_mobile: "Mobile Number",
+                lbl_vehicle: "Vehicle Reg.",
+                lbl_req_date: "Request Date",
+                lbl_req_time: "Request Time",
+                sec_work: "Work Details",
+                lbl_obj: "Objective",
+                lbl_desc: "Description",
+                lbl_cat: "Work Category",
+                lbl_risk: "Hot Work Risk",
+                lbl_risk_desc: "Work involving heat/sparks",
+                sec_area: "Access Area",
+                
+                // Add Buildings Translations
+                lbl_bldg_1: "Building 1",
+                lbl_bldg_2: "Building 2",
+                lbl_bldg_3: "Building 3",
+
+                lbl_floor_1: "Floor 1",
+                lbl_floor_2: "Floor 2",
+                lbl_other_areas: "Other Areas",
+                lbl_general_rooms: "All Rooms",
+                lbl_add_custom_room: "Add custom room (If not in list)",
+                ph_room_name: "Enter room name...",
+                lbl_select_floor: "-- Select Floor --",
+                btn_add_room: "Add",
+                sec_schedule: "Schedule",
+                lbl_start: "Start Time",
+                lbl_end: "Finish Time",
+                sec_workers: "Worker List",
+                th_no: "No.",
+                th_fname: "First Name",
+                th_lname: "Last Name",
+                th_phone: "Phone Number",
+                th_pos: "Position",
+                sec_sig: "Signature Section",
+                sig_note: "Please print the document and sign in the boxes below",
+                sig_req_role: "Requester",
+                sig_req_sub: "Sign here",
+                sig_app_role: "Supervisor",
+                sig_app_sub: "Approver",
+                sig_warn: "Unsigned forms will not be processed to access the site.",
+                btn_prev: "Preview",
+                btn_submit: "Submit Form",
+                ph_firstname: "Enter first name",
+                ph_lastname: "Enter last name",
+                ph_dept: "Enter department",
+                ph_vendor: "Enter company name",
+                ph_vehicle: "e.g. 1AB 1234",
+                ph_obj: "e.g., Annual PM",
+                ph_desc: "Describe scope of work...",
+                ph_w_fname: "First Name",
+                ph_w_lname: "Last Name",
+                modal_success_title: "Submitted Successfully!",
+                modal_success_desc: "Redirecting to approval page..."
+            }
+        };
+
+        const engMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        const currentYear = new Date().getFullYear();
+
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+        let currentBuilding = 'building1'; 
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('site_lang', lang);
+            
+            const langBtnText = document.getElementById('lang-btn-text');
+            const langFlagImg = document.getElementById('lang-flag-img');
+            if (langBtnText && langFlagImg) {
+                langBtnText.innerText = lang === 'th' ? 'EN' : 'TH';
+                langFlagImg.src = lang === 'th' ? 'https://flagcdn.com/w40/gb.png' : 'https://flagcdn.com/w40/th.png';
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            const dateEl = document.querySelector('.currentDate');
+            if (dateEl) {
+                dateEl.innerText = lang === 'th' ? new Date().toLocaleDateString('th-TH') : new Date().toLocaleDateString('en-GB');
+            }
+
+            if (typeof renderDateSelects === 'function') {
+                renderDateSelects(lang);
+                renderTimeSelects(lang);
+            }
+            
+            document.querySelectorAll('input[name^="worker_fname_"]').forEach(el => {
+                el.placeholder = lang === 'th' ? 'ชื่อ' : 'First Name';
+            });
+            document.querySelectorAll('input[name^="worker_lname_"]').forEach(el => {
+                el.placeholder = lang === 'th' ? 'นามสกุล' : 'Last Name';
+            });
+
+            updateCustomRoomDropdown();
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'th' ? 'en' : 'th');
+        }
+
+        const buildingsData = {
+            building1: {
+                name_th: "ตึก 1",
+                name_en: "Building 1",
+                floors: {
+                    floor1: {
+                        i18n: 'lbl_floor_1',
+                        items: [
+                            "NETWORK OPERATIONS CENTER ROOM (NOC Room)", "Entrance Area + Pantry", "WC Woman","WC man" ,"Meeting Room", 
+                            "Corridor 1", "Spare Part Room 1", "Novec & CO2 Room", 
+                            "Electrical Room", "Generator Room", "Battery Room 1", 
+                            "Rectifier Room", "Battery Room 2", "Staircase (Floor 1)", "Lift (Floor 1)"
+                        ]
+                    },
+                    floor2: {
+                        i18n: 'lbl_floor_2',
+                        items: [
+                            "Corridor 2", "Data Center Room 1", "Data Center Room 2", 
+                            "Meet Me Room 1", "Meet Me Room 2", "Submarine Cable Room 1", 
+                            "Submarine Cable Room 2", "Submarine Cable Room 3", 
+                            "Balcony Floor 2", "Power House Floor 2", "Staircase (Floor 2)", "Lift (Floor 2)"
+                        ]
+                    },
+                    other: {
+                        i18n: 'lbl_other_areas',
+                        items: [
+                            "Basement", "Lift (Floor G)", "Balcony Floor 3", 
+                            "Generator Room 2", "Spare Part Room 2"
+                        ]
+                    }
+                }
+            },
+            building2: {
+                name_th: "ตึก 2",
+                name_en: "Building 2",
+                floors: {
+                    floor1: {
+                        i18n: 'lbl_floor_1',
+                        items: [
+                            "Office Room 1", "Office Room 2", "Pantry Area", "WC Building 2", "Corridor Building 2",
+                            "Generator Room 2", "Electrical Room 2", "Electrical Room 3"
+                        ]
+                    },
+                    floor2: {
+                        i18n: 'lbl_floor_2',
+                        items: [
+                            "Meeting Room A", "Meeting Room B", "Server Room (Building 2)", "Storage Room"
+                        ]
+                    }
+                }
+            },
+            building3: {
+                name_th: "ตึก 3",
+                name_en: "Building 3",
+                floors: {
+                    floor1: {
+                        i18n: 'lbl_general_rooms',
+                        items: [] 
+                    }
+                }
+            }
+        };
+
+        function switchBuilding(bldgKey) {
+            currentBuilding = bldgKey;
+            
+            document.querySelectorAll('.bldg-tab').forEach(tab => {
+                if(tab.getAttribute('data-bldg') === bldgKey) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            for (const key in buildingsData) {
+                const wrap = document.getElementById(`wrap-${key}`);
+                if (wrap) {
+                    if (key === currentBuilding) {
+                        wrap.classList.remove('hidden');
+                    } else {
+                        wrap.classList.add('hidden');
+                    }
+                }
+            }
+
+            updateCustomRoomDropdown();
+        }
+
+        function renderAreas() {
+            const container = document.getElementById('area-container');
+            if(!container) return;
+            container.innerHTML = ''; 
+
+            for (const bldgKey in buildingsData) {
+                const bldgData = buildingsData[bldgKey];
+                const bldgName = bldgData.name_en; 
+
+                const bldgWrap = document.createElement('div');
+                bldgWrap.id = `wrap-${bldgKey}`;
+                bldgWrap.className = `grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 w-full transition-all duration-300 ${bldgKey === currentBuilding ? '' : 'hidden'}`;
+
+                for (const floorKey in bldgData.floors) {
+                    const group = bldgData.floors[floorKey];
+
+                    const col = document.createElement('div');
+                    col.className = 'bg-slate-50/70 rounded-xl p-3 md:p-4 border border-slate-100 flex flex-col h-full';
+
+                    const header = document.createElement('div');
+                    header.className = 'text-sm font-bold text-[var(--corp-blue)] mb-3 pb-2 border-b border-slate-200 flex items-center gap-2';
+                    
+                    let icon = '<i class="ph-duotone ph-door text-lg"></i>';
+                    if(floorKey.includes('floor')) icon = '<i class="ph-duotone ph-stairs text-lg"></i>';
+                    
+                    header.innerHTML = `${icon} <span data-i18n="${group.i18n}">${translations[currentLang][group.i18n] || group.i18n}</span>`;
+                    col.appendChild(header);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'area-grid';
+                    grid.id = `grid-${bldgKey}-${floorKey}`; 
+
+                    if (group.items.length === 0) {
+                        grid.innerHTML = `<div class="text-xs text-slate-400 italic col-span-full py-2 w-full text-center">ยังไม่มีข้อมูลห้อง / Coming soon</div>`;
+                    } else {
+                        group.items.forEach(item => {
+                            let formVal = `[${bldgName}] ${item}`;
+                            grid.innerHTML += `<label class="selection-card area-card relative w-full sm:w-auto">
+                                <input type="checkbox" name="area" value="${formVal}" class="absolute opacity-0 w-0 h-0">
+                                <div class="card-content justify-start text-left px-3 py-1.5">${item}</div>
+                            </label>`;
+                        });
+                    }
+                    
+                    col.appendChild(grid);
+                    bldgWrap.appendChild(col);
+                }
+                container.appendChild(bldgWrap);
+            }
+        }
+
+        function updateCustomRoomDropdown() {
+            const floorSelect = document.getElementById('custom-room-floor');
+            if(!floorSelect) return;
+            
+            floorSelect.innerHTML = `<option value="" disabled selected data-i18n="lbl_select_floor">${translations[currentLang]['lbl_select_floor']}</option>`;
+            
+            const currentFloors = buildingsData[currentBuilding].floors;
+            for (const floorKey in currentFloors) {
+                const group = currentFloors[floorKey];
+                const optionValue = `${currentBuilding}-${floorKey}`;
+                floorSelect.innerHTML += `<option value="${optionValue}">${translations[currentLang][group.i18n]}</option>`;
+            }
+        }
+
+        function addCustomRoom() {
+            const input = document.getElementById('custom-room-input');
+            const select = document.getElementById('custom-room-floor');
+            
+            const roomName = input.value.trim();
+            const targetGridId = select.value; 
+
+            if (!roomName) {
+                input.focus();
+                input.parentElement.classList.add('ring-2', 'ring-red-400');
+                setTimeout(() => input.parentElement.classList.remove('ring-2', 'ring-red-400'), 1500);
+                return;
+            }
+            if (!targetGridId) {
+                select.focus();
+                select.parentElement.classList.add('ring-2', 'ring-red-400');
+                setTimeout(() => select.parentElement.classList.remove('ring-2', 'ring-red-400'), 1500);
+                return;
+            }
+
+            const targetGrid = document.getElementById('grid-' + targetGridId);
+            if (!targetGrid) return;
+
+            const placeholder = targetGrid.querySelector('.italic');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            const label = document.createElement('label');
+            label.className = 'selection-card area-card relative animate-[bounceIn_0.3s_ease-out] w-full sm:w-auto';
+            
+            const bldgName = buildingsData[currentBuilding].name_en;
+            const formVal = `[${bldgName}] ${roomName} (Custom Added)`;
+
+            label.innerHTML = `
+                <input type="checkbox" name="area" value="${formVal}" checked class="absolute opacity-0 w-0 h-0">
+                <div class="card-content justify-start text-left !pl-3 !pr-1.5 !py-1.5 border-[var(--corp-blue)] bg-[#f0f4ff] text-[var(--corp-blue)] font-bold flex items-center justify-between gap-2 shadow-sm rounded-lg">
+                    <span class="truncate max-w-[150px] sm:max-w-xs">${roomName}</span>
+                    <button type="button" onclick="removeCustomRoom(this, event)" class="text-slate-400 hover:text-white hover:bg-red-500 bg-white rounded-md w-6 h-6 flex items-center justify-center transition-all shadow-sm border border-slate-200 ml-1 shrink-0">
+                        <i class="ph-bold ph-x text-[10px]"></i>
+                    </button>
+                </div>
+            `;
+
+            targetGrid.appendChild(label);
+            input.value = '';
+        }
+
+        function removeCustomRoom(btn, event) {
+            event.preventDefault(); 
+            event.stopPropagation();
+            
+            const label = btn.closest('.area-card');
+            label.classList.add('opacity-0', 'scale-90', 'transition-all');
+            setTimeout(() => label.remove(), 200);
+        }
+
+        // ---  อัปเดตเวลาแบบเรียลไทม์ (Real-time Date & Time) ---
+        function updateRealTimeRequest() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const hr = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const sec = String(now.getSeconds()).padStart(2, '0');
+            
+            // Format Display (e.g. 01 ตุลาคม 2569 or 01 October 2026)
+            const displayDate = currentLang === 'th' ? `${d} ${thaiMonths[now.getMonth()]} ${y + 543}` : `${d} ${engMonths[now.getMonth()]} ${y}`;
+            const dbDate = `${y}-${m}-${d}`; // YYYY-MM-DD
+            const timeStr = `${hr}:${min}`; // HH:mm
+
+            const reqDateDisplay = document.getElementById('display_req_date');
+            const reqTimeDisplay = document.getElementById('display_req_time');
+
+            if(reqDateDisplay) reqDateDisplay.value = displayDate;
+            if(reqTimeDisplay) reqTimeDisplay.value = timeStr + (currentLang === 'th' ? " น." : "");
+            
+            const reqDateHidden = document.getElementById('req_date_hidden');
+            const reqTimeHidden = document.getElementById('req_time_hidden');
+            if(reqDateHidden) reqDateHidden.value = dbDate;
+            if(reqTimeHidden) reqTimeHidden.value = timeStr;
+
+            // อัปเดตวันที่ตรงลายเซ็นผู้ขอ
+            const sigDateEl = document.getElementById('current-sig-date');
+            if (sigDateEl) {
+                sigDateEl.innerText = `${d}/${m}/${y}`;
+            }
+
+            // 🌟 เพิ่ม: อัปเดตเวลาที่แสดงผลบน Header
+            const pillTimeEl = document.getElementById('pill-time');
+            if(pillTimeEl) pillTimeEl.innerText = `${hr}:${min}:${sec}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAreas(); 
+            setLanguage(currentLang);
+            updateRealTimeRequest();
+            setInterval(updateRealTimeRequest, 1000); // อัปเดตวิละครั้ง
+            
+            document.getElementById('custom-room-input').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomRoom();
+                }
+            });
+
+            // 🌟🌟 ระบบจัดการรายชื่อผู้ปฏิบัติงานแบบไดนามิก (เพิ่ม/ลบได้ไม่จำกัด + แนบเอกสารรายคน) 🌟🌟
+            const workerContainer = document.getElementById('worker-list-container');
+            const addWorkerBtn = document.getElementById('add-worker-btn');
+            let workerIdCounter = 0;
+            const MAX_WORKERS = 15;
+            const MIN_WORKERS = 1;
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const ALLOWED_EXT = ['pdf','jpg','jpeg','png','doc','docx'];
+
+            function renumberWorkers() {
+                const rows = workerContainer.querySelectorAll('.worker-row');
+                rows.forEach((row, idx) => {
+                    const badge = row.querySelector('.worker-index-badge');
+                    if (badge) badge.innerText = idx + 1;
+                    const removeBtn = row.querySelector('.remove-worker-btn');
+                    if (removeBtn) removeBtn.style.display = rows.length > MIN_WORKERS ? 'flex' : 'none';
+                });
+            }
+
+            function formatBytes(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+                return (bytes/(1024*1024)).toFixed(1) + ' MB';
+            }
+
+            // 🌟 กำหนดไฟล์ให้กับ dropzone ที่ระบุ (ใช้ทั้งตอนเลือกไฟล์และตอนลากวาง)
+            function assignFileToDropzone(dropzone, file) {
+                const fileInput = dropzone.parentElement.querySelector('.file-input');
+                const fileNameDisplay = dropzone.querySelector('.file-name-display');
+                const fileSizeDisplay = dropzone.querySelector('.file-size-display');
+
+                dropzone.classList.remove('dropzone-error');
+
+                if (!file) return;
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!ALLOWED_EXT.includes(ext)) {
+                    dropzone.classList.add('dropzone-error');
+                    alert(currentLang === 'th' ? 'รองรับเฉพาะไฟล์ PDF, JPG, PNG, DOC, DOCX เท่านั้น' : 'Only PDF, JPG, PNG, DOC, DOCX files are supported');
+                    return;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    dropzone.classList.add('dropzone-error');
+                    alert(currentLang === 'th' ? 'ขนาดไฟล์ต้องไม่เกิน 5MB' : 'File size must not exceed 5MB');
+                    return;
+                }
+
+                // ใส่ไฟล์เข้า input จริงผ่าน DataTransfer (รองรับทั้งกรณีเลือกไฟล์และลากวาง)
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+
+                fileNameDisplay.textContent = file.name;
+                if (fileSizeDisplay) fileSizeDisplay.textContent = formatBytes(file.size);
+                dropzone.classList.add('has-file');
+
+                const parent = dropzone.closest('.relative') || dropzone.parentElement;
+                if (parent) removeTooltip(parent);
+            }
+
+            function clearDropzone(dropzone) {
+                const fileInput = dropzone.parentElement.querySelector('.file-input');
+                fileInput.value = '';
+                dropzone.classList.remove('has-file', 'dropzone-error');
+                const fileNameDisplay = dropzone.querySelector('.file-name-display');
+                const fileSizeDisplay = dropzone.querySelector('.file-size-display');
+                if (fileNameDisplay) fileNameDisplay.textContent = '';
+                if (fileSizeDisplay) fileSizeDisplay.textContent = '';
+            }
+
+            function createWorkerRow() {
+                if (workerContainer.querySelectorAll('.worker-row').length >= MAX_WORKERS) {
+                    alert(currentLang === 'th' ? `เพิ่มได้สูงสุด ${MAX_WORKERS} คน` : `Max ${MAX_WORKERS} workers.`);
+                    return;
+                }
+                workerIdCounter++;
+                const rowId = `worker-row-${workerIdCounter}`;
+
+                const row = document.createElement('div');
+                row.className = 'worker-row bg-white p-3 rounded-xl border border-slate-200 shadow-sm relative transition-all duration-300';
+                row.id = rowId;
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="worker-index-badge w-6 h-6 rounded-full bg-[var(--corp-blue)] text-white text-xs font-bold flex items-center justify-center shrink-0">${workerContainer.querySelectorAll('.worker-row').length + 1}</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Worker</span>
+                    </div>
+                    <button type="button" class="absolute top-2 right-2 w-7 h-7 rounded-full text-slate-400 hover:text-white hover:bg-red-500 flex items-center justify-center transition-colors remove-worker-btn" title="ลบรายการนี้">
+                        <i class="ph-bold ph-trash text-sm"></i>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="form-group">
+                            <label class="form-label !text-xs !mb-1">ชื่อ-สกุล ผู้ปฏิบัติงาน</label>
+                            <input type="text" name="worker_name_${workerIdCounter}" class="form-input !text-sm" placeholder="นายทดสอบ ระบบดี" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label !text-xs !mb-1">เบอร์โทรศัพท์</label>
+                            <input type="tel" name="worker_phone_${workerIdCounter}" class="form-input !text-sm" placeholder="081-234-5678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label !text-xs !mb-1">ตำแหน่ง</label>
+                            <input type="text" name="worker_pos_${workerIdCounter}" class="form-input !text-sm" placeholder="ช่างเทคนิค">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label !text-xs !mb-1">แนบเอกสารยืนยันตัวตน (ถ้ามี)</label>
+                        <input type="file" name="worker_attachment_${workerIdCounter}" class="hidden file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+
+                        <div class="dropzone" tabindex="0">
+                            <div class="dropzone-empty">
+                                <i class="ph-duotone ph-upload-simple text-2xl text-slate-400"></i>
+                                <span class="text-xs text-slate-500">
+                                    <span class="hidden sm:inline">${currentLang === 'th' ? 'ลากไฟล์มาวางที่นี่ หรือ' : 'Drag file here or'}</span>
+                                    <span class="text-[var(--corp-blue)] font-bold underline">${currentLang === 'th' ? 'คลิกเพื่อเลือกไฟล์' : 'click to browse'}</span>
+                                </span>
+                            </div>
+                            <div class="dropzone-filled">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <i class="ph-duotone ph-file-text text-lg text-[var(--corp-blue)] shrink-0"></i>
+                                    <div class="min-w-0 text-left">
+                                        <div class="text-xs font-medium text-slate-700 truncate file-name-display"></div>
+                                        <div class="text-[10px] text-slate-400 file-size-display"></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="remove-file-btn text-slate-400 hover:text-white hover:bg-red-500 bg-white rounded-md w-6 h-6 flex items-center justify-center transition-all shadow-sm border border-slate-200 shrink-0" title="ลบไฟล์">
+                                    <i class="ph-bold ph-x text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">รองรับไฟล์ PDF, JPG, PNG, DOC, DOCX ขนาดไม่เกิน 5MB</p>
+                    </div>
+                `;
+                workerContainer.appendChild(row);
+                renumberWorkers();
+            }
+
+            // Event Delegation สำหรับปุ่มต่างๆ ในส่วน worker
+            workerContainer.addEventListener('click', function(e) {
+                // ปุ่มลบผู้ปฏิบัติงาน
+                const removeBtn = e.target.closest('.remove-worker-btn');
+                if (removeBtn) {
+                    const totalRows = workerContainer.querySelectorAll('.worker-row').length;
+                    if (totalRows <= MIN_WORKERS) {
+                        alert(currentLang === 'th' ? 'ต้องมีผู้ปฏิบัติงานอย่างน้อย 1 คน' : 'At least 1 worker is required.');
+                        return;
+                    }
+                    const rowToRemove = removeBtn.closest('.worker-row');
+                    rowToRemove.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => { rowToRemove.remove(); renumberWorkers(); }, 300);
+                    return;
+                }
+
+                // ปุ่มลบไฟล์แนบ (X ที่มุมไฟล์)
+                const removeFileBtn = e.target.closest('.remove-file-btn');
+                if (removeFileBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dropzone = removeFileBtn.closest('.dropzone');
+                    clearDropzone(dropzone);
+                    return;
+                }
+
+                // คลิกที่ dropzone (แต่ไม่ใช่ตอนมีไฟล์แล้ว) -> เปิด file picker
+                const dropzone = e.target.closest('.dropzone');
+                if (dropzone && !dropzone.classList.contains('has-file')) {
+                    const fileInput = dropzone.parentElement.querySelector('.file-input');
+                    fileInput.click();
+                }
+            });
+
+            // เลือกไฟล์ผ่าน dialog ปกติ
+            workerContainer.addEventListener('change', function(e) {
+                if (e.target.classList.contains('file-input')) {
+                    const dropzone = e.target.parentElement.querySelector('.dropzone');
+                    if (e.target.files.length > 0) {
+                        assignFileToDropzone(dropzone, e.target.files[0]);
+                    } else {
+                        clearDropzone(dropzone);
+                    }
+                }
+            });
+
+            // 🌟 Drag & Drop เหมือน Google Drive
+            ['dragenter', 'dragover'].forEach(evt => {
+                workerContainer.addEventListener(evt, function(e) {
+                    const dropzone = e.target.closest('.dropzone');
+                    if (!dropzone) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('dropzone-dragover');
+                });
+            });
+
+            ['dragleave', 'dragend'].forEach(evt => {
+                workerContainer.addEventListener(evt, function(e) {
+                    const dropzone = e.target.closest('.dropzone');
+                    if (!dropzone) return;
+                    dropzone.classList.remove('dropzone-dragover');
+                });
+            });
+
+            workerContainer.addEventListener('drop', function(e) {
+                const dropzone = e.target.closest('.dropzone');
+                if (!dropzone) return;
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('dropzone-dragover');
+
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    assignFileToDropzone(dropzone, files[0]); // รับทีละ 1 ไฟล์ต่อผู้ปฏิบัติงาน 1 คน
+                }
+            });
+
+            // ปุ่มเพิ่มผู้ปฏิบัติงาน
+            addWorkerBtn.addEventListener('click', createWorkerRow);
+
+            // เพิ่มผู้ปฏิบัติงานคนแรกเมื่อโหลดหน้า
+            createWorkerRow();
+
+            // --- จัดการตอน Submit Form ---
+            const myForm = document.getElementById('main-form');
+            myForm.addEventListener('submit', function(e) {
+                // เปลี่ยน enctype ของฟอร์มเพื่อรองรับการอัปโหลดไฟล์
+                myForm.enctype = 'multipart/form-data';
+            });
+            // 🌟🌟 สิ้นสุด: ระบบจัดการรายชื่อผู้ปฏิบัติงานแบบไดนามิก 🌟🌟
+
+            // 🌟 เพิ่มระบบให้สามารถกดยกเลิก Radio Button ได้เมื่อกดซ้ำข้อเดิม 🌟
+            let lastCheckedState = {};
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                if (radio.checked) lastCheckedState[radio.name] = radio.value;
+                
+                radio.addEventListener('click', function(e) {
+                    if (lastCheckedState[this.name] === this.value) {
+                        this.checked = false;
+                        lastCheckedState[this.name] = null;
+                    } else {
+                        lastCheckedState[this.name] = this.value;
+                        const parent = this.closest('.selection-card').parentElement.parentElement;
+                        if(parent) removeTooltip(parent);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <div class="bg-container">
+        <i class="ph-duotone ph-broadcast floating-icon icon-1"></i>
+        <i class="ph-duotone ph-globe floating-icon icon-2"></i> 
+        <i class="ph-duotone ph-wifi-high floating-icon icon-3"></i>
+        <i class="ph-duotone ph-satellite floating-icon icon-4"></i>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-overlay">
+        <div class="flex flex-col items-center">
+            <div class="w-12 h-12 border-4 border-slate-200 border-t-[#001C54] rounded-full animate-spin mb-4"></div>
+            <div class="text-slate-500 font-bold text-sm tracking-widest">SAVING...</div>
+        </div>
+    </div>
+
+    <div id="web-view" class="max-w-5xl mx-auto pb-6 md:pb-16 relative z-10">
+        
+        <!--  กลับ Dashboard (Fixed)  -->
+        <a href="dashboard.html" class="btn-top-action left-4 stagger-up hover:bg-slate-50 transition-colors">
+            <i class="ph-bold ph-caret-left text-[14px] md:text-lg"></i>
+            <span class="hidden sm:inline" data-i18n="btn_dash">Dashboard</span> 
+        </a>
+
+        <!--  ปุ่มเปลี่ยนภาษา (Fixed)  -->
+        <button onclick="toggleLanguage()" class="btn-top-action right-4 stagger-up hover:bg-slate-50 transition-colors">
+            <img id="lang-flag-img" src="https://flagcdn.com/w40/gb.png" alt="Language Flag" class="w-4 md:w-5 h-auto rounded-sm drop-shadow-sm border border-slate-200">
+            <span id="lang-btn-text" class="font-bold text-slate-600">EN</span>
+        </button>
+
+        <form id="main-form" novalidate onsubmit="event.preventDefault(); window.saveData();">
+            
+            <!-- 1. Header (Delay 0.1s) -->
+            <div class="header-centered stagger-up delay-100">
+                <img src="{{ BRAND_LOGO_URL }}" alt="Demo Company Logo" class="header-logo-img" onerror="this.style.display='none'">
+                <h1 class="header-title" data-i18n="title">Access Site Request</h1>
+                <p class="header-subtitle" data-i18n="subtitle">แบบฟอร์มขออนุญาตเข้าพื้นที่ปฏิบัติงาน (Engineering Dept.)</p>
+                <div class="header-pill">
+                    <span class="pill-tag">FR-018</span>
+                    <div class="pill-divider hidden sm:block"></div>
+                    <span class="pill-label" data-i18n="pill_date">DATE REQUEST</span>
+                    <span class="pill-date currentDate"></span>
+                </div>
+            </div>
+            
+            <!-- 2. Requester Info (Delay 0.2s) -->
+            <div class="form-card stagger-up delay-200">
+                <div class="section-header">
+                    <div class="icon-circle"><i class="ph-fill ph-user-circle"></i></div>
+                    <div class="section-title" data-i18n="sec_req">ข้อมูลผู้ขอ (Requester Info)</div>
+                </div>
+                
+                <!-- 🌟 แก้ไขให้ตัวเลือก User Type เปล่าๆ ไม่ติ๊กเลือกอันไหนเลย 🌟 -->
+                <div id="user-type-container" class="bg-slate-50 p-1.5 md:p-2 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-2 mb-5 md:mb-8 shadow-inner transition-colors duration-300">
+                    <div class="flex-1 flex flex-col sm:flex-row gap-2">
+                        <label class="selection-card flex-1 mb-0 group">
+                            <!-- รวมชื่อกลุ่มเป็น user_type เพื่อให้เลือกได้แค่อันเดียว -->
+                            <input type="radio" name="user_type" value="Internal" class="absolute opacity-0 w-0 h-0">
+                            <div class="card-content bg-white shadow-sm border-0 transition-all duration-300 group-hover:scale-[1.02]">Internal</div>
+                        </label>
+                        <label class="selection-card flex-1 mb-0 group">
+                            <input type="radio" name="user_type" value="Subcontractor" class="absolute opacity-0 w-0 h-0">
+                            <div class="card-content bg-white shadow-sm border-0 transition-all duration-300 group-hover:scale-[1.02]">Subcontractor</div>
+                        </label>
+                    </div>
+                    <div class="hidden sm:block w-px bg-slate-300 mx-1"></div>
+                    <div class="flex-1 flex flex-col sm:flex-row gap-2">
+                        <label class="selection-card flex-1 mb-0 group">
+                            <input type="radio" name="user_type" value="Customer" class="absolute opacity-0 w-0 h-0">
+                            <div class="card-content bg-white shadow-sm border-0 transition-all duration-300 group-hover:scale-[1.02]">Customer</div>
+                        </label>
+                        <label class="selection-card flex-1 mb-0 group">
+                            <input type="radio" name="user_type" value="Vendor" class="absolute opacity-0 w-0 h-0">
+                            <div class="card-content bg-white shadow-sm border-0 transition-all duration-300 group-hover:scale-[1.02]">Vendor</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 md:gap-y-5 mb-5 md:mb-6">
+                    <div class="relative">
+                        <label data-i18n="lbl_firstname">ชื่อ (First Name)</label>
+                        <input type="text" name="requester_fname" data-i18n-placeholder="ph_firstname" placeholder="ระบุชื่อ" required>
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_lastname">นามสกุล (Last Name)</label>
+                        <input type="text" name="requester_lname" data-i18n-placeholder="ph_lastname" placeholder="ระบุนามสกุล" required>
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_dept">หน่วยงาน (Department)</label>
+                        <input type="text" name="company" data-i18n-placeholder="ph_dept" placeholder="ระบุสังกัด" required>
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_vendor">บริษัท (Company)</label>
+                        <input type="text" name="vendor_company" data-i18n-placeholder="ph_vendor" placeholder="ระบุชื่อบริษัท">
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_mobile">เบอร์ติดต่อ (Mobile)</label>
+                        <input type="tel" name="mobile" placeholder="08x-xxx-xxxx" required>
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_vehicle">ทะเบียนรถ (Vehicle Reg.)</label>
+                        <input type="text" name="vehicle_reg" data-i18n-placeholder="ph_vehicle" placeholder="เช่น 1กข 1234 กทม.">
+                    </div>
+                </div>
+
+                <!--  ส่วนอัพเดทวันที่แบบ Real-time  -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 p-4 md:p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div class="relative">
+                        <label style="color:var(--corp-blue)" data-i18n="lbl_req_date">วันที่แจ้ง (Request Date)</label>
+                        <input type="text" id="display_req_date" class="w-full p-2 bg-slate-200/50 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed font-medium text-sm" disabled>
+                        <input type="hidden" name="req_date" id="req_date_hidden">
+                    </div>
+                    <div class="relative">
+                        <label style="color:var(--corp-blue)" data-i18n="lbl_req_time">เวลา (Time)</label>
+                        <input type="text" id="display_req_time" class="w-full p-2 bg-slate-200/50 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed font-medium text-sm font-mono" disabled>
+                        <input type="hidden" name="req_time" id="req_time_hidden">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Work Details (Delay 0.3s) -->
+            <div class="form-card stagger-up delay-300">
+                <div class="section-header">
+                    <div class="icon-circle"><i class="ph-fill ph-briefcase-metal"></i></div>
+                    <div class="section-title" data-i18n="sec_work">รายละเอียดงาน (Work Details)</div>
+                </div>
+                
+                <div class="space-y-4 md:space-y-6">
+                    <div class="relative">
+                        <label data-i18n="lbl_obj">วัตถุประสงค์ (Objective)</label>
+                        <input type="text" name="objective" data-i18n-placeholder="ph_obj" placeholder="เช่น PM ประจำปี" required style="border-left: 4px solid var(--corp-blue);">
+                    </div>
+                    <div class="relative">
+                        <label data-i18n="lbl_desc">รายละเอียด (Description)</label>
+                        <input type="text" name="detail_work" data-i18n-placeholder="ph_desc" placeholder="อธิบายขอบเขตงาน..." required>
+                    </div>
+                    
+                    <div>
+                        <label class="mb-2 md:mb-3" data-i18n="lbl_cat">ประเภทงาน (Category)</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <!-- Maintenance -->
+                            <div class="flex flex-col gap-2">
+                                <label class="selection-card relative h-full">
+                                    <input type="checkbox" name="work_type" value="Maintenance" class="absolute opacity-0 w-0 h-0" onchange="document.getElementById('specify_maintenance').style.display = this.checked ? 'block' : 'none'">
+                                    <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-wrench text-xl"></i> <span class="text-left leading-tight text-sm">Maintenance <span class="text-red-500 font-bold text-xs">*specify</span></span></div>
+                                </label>
+                                <input type="text" id="specify_maintenance" class="w-full text-sm p-2 border border-slate-300 rounded-lg hidden focus:ring-2 focus:ring-[var(--corp-blue-light)] outline-none transition-all" placeholder="ระบุรายละเอียด..." style="display: none;">
+                            </div>
+                            
+                            <!-- Config Server -->
+                            <label class="selection-card relative h-full">
+                                <input type="checkbox" name="work_type" value="Config Server" class="absolute opacity-0 w-0 h-0">
+                                <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-desktop text-xl"></i> <span class="text-left leading-tight text-sm">Config Server</span></div>
+                            </label>
+                            
+                            <!-- Install/Uninstall Server -->
+                            <label class="selection-card relative h-full">
+                                <input type="checkbox" name="work_type" value="Install/Uninstall Server" class="absolute opacity-0 w-0 h-0">
+                                <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-hard-drives text-xl"></i> <span class="text-left leading-tight text-sm">Install/Uninstall Server</span></div>
+                            </label>
+
+                            <!-- Change Equipment -->
+                            <label class="selection-card relative h-full">
+                                <input type="checkbox" name="work_type" value="Change Equipment" class="absolute opacity-0 w-0 h-0">
+                                <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-swap text-xl"></i> <span class="text-left leading-tight text-sm">Change Equipment</span></div>
+                            </label>
+
+                            <!-- Cabling -->
+                            <label class="selection-card relative h-full">
+                                <input type="checkbox" name="work_type" value="Cabling" class="absolute opacity-0 w-0 h-0">
+                                <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-plugs text-xl"></i> <span class="text-left leading-tight text-sm">Cabling</span></div>
+                            </label>
+
+                            <!-- Other -->
+                            <div class="flex flex-col gap-2">
+                                <label class="selection-card relative h-full">
+                                    <input type="checkbox" name="work_type" value="Other" class="absolute opacity-0 w-0 h-0" onchange="document.getElementById('specify_other').style.display = this.checked ? 'block' : 'none'">
+                                    <div class="card-content flex-row py-2.5 px-4 h-full gap-3 justify-start"><i class="ph-duotone ph-dots-three-circle text-xl"></i> <span class="text-left leading-tight text-sm">Other</span></div>
+                                </label>
+                                <input type="text" id="specify_other" class="w-full text-sm p-2 border border-slate-300 rounded-lg hidden focus:ring-2 focus:ring-[var(--corp-blue-light)] outline-none transition-all" placeholder="ระบุประเภทงาน..." style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HOT WORK RISK SECTION UPDATE -->
+                    <div id="risk-container" class="relative bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-100 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm transition-all duration-300 hover:shadow-md hover:border-red-300">
+                        <div class="flex items-center gap-3 md:gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 text-white flex items-center justify-center text-2xl shadow-lg shrink-0 risk-icon-anim">
+                                <i class="ph-fill ph-fire"></i>
+                            </div>
+                            <div>
+                                <div class="font-extrabold text-red-700 text-base md:text-lg tracking-tight" data-i18n="lbl_risk">ความเสี่ยง (Hot Work Risk)</div>
+                                <div class="text-xs md:text-sm text-red-600/80 font-semibold mt-0.5" data-i18n="lbl_risk_desc">งานที่มีความร้อน/ประกายไฟ (เชื่อม, ตัด, เจียร)</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 md:gap-3 w-full md:w-auto mt-2 md:mt-0">
+                            <!-- เอา checked ตรงตัวเลือก No ออกแล้วบังคับให้ user เลือกเอง -->
+                            <label class="selection-card risk-card flex-1 md:flex-none relative mb-0 group">
+                                <input type="radio" name="risk" value="Yes" class="absolute opacity-0 w-0 h-0" required>
+                                <div class="card-content risk-yes !py-2.5 md:!px-8 text-sm md:text-base font-bold rounded-xl transition-all duration-300 group-hover:scale-105 shadow-sm">YES</div>
+                            </label>
+                            <label class="selection-card risk-card flex-1 md:flex-none relative mb-0 group">
+                                <input type="radio" name="risk" value="No" class="absolute opacity-0 w-0 h-0" required>
+                                <div class="card-content risk-no !py-2.5 md:!px-8 text-sm md:text-base font-bold rounded-xl transition-all duration-300 group-hover:scale-105 shadow-sm">NO</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. AREA SECTION (Delay 0.4s) -->
+            <div class="form-card stagger-up delay-400">
+                <div class="section-header mb-4">
+                    <div class="icon-circle"><i class="ph-fill ph-map-pin-line"></i></div>
+                    <div class="section-title" data-i18n="sec_area">พื้นที่ปฏิบัติงาน (Area)</div>
+                </div>
+                
+                <!-- Building Switcher Tabs -->
+                <div class="flex bg-slate-100 p-1 rounded-xl mb-5 md:mb-6 mx-auto w-full max-w-md shadow-inner relative">
+                    <button type="button" class="bldg-tab active" data-bldg="building1" onclick="switchBuilding('building1')">
+                        <i class="ph-bold ph-buildings mr-1"></i> <span data-i18n="lbl_bldg_1">ตึก 1</span>
+                    </button>
+                    <button type="button" class="bldg-tab" data-bldg="building2" onclick="switchBuilding('building2')">
+                        <i class="ph-bold ph-buildings mr-1"></i> <span data-i18n="lbl_bldg_2">ตึก 2</span>
+                    </button>
+                    <button type="button" class="bldg-tab" data-bldg="building3" onclick="switchBuilding('building3')">
+                        <i class="ph-bold ph-buildings mr-1"></i> <span data-i18n="lbl_bldg_3">ตึก 3</span>
+                    </button>
+                </div>
+
+                <!-- Container for Dynamically Rendered Areas -->
+                <div id="area-container" class="relative">
+                    <!-- JS จะสร้าง Grid ของตึกต่างๆ มาวางที่นี่ และจะใช้ CSS Hidden สลับซ่อน/แสดง -->
+                </div>
+
+                <!-- Custom Room Input Section -->
+                <div id="custom-room-section" class="mt-5 md:mt-6 p-4 md:p-5 bg-white border border-slate-200 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 bg-[var(--corp-blue-light)] opacity-80 h-full"></div>
+                    <label class="block text-sm font-bold text-[var(--corp-blue)] mb-3 pl-2 flex items-center gap-2">
+                        <i class="ph-duotone ph-list-plus text-lg"></i>
+                        <span data-i18n="lbl_add_custom_room">ระบุห้องเพิ่มเติม (หากไม่มีในรายการ)</span>
+                    </label>
+                    
+                    <div class="flex flex-col lg:flex-row gap-3 ml-0 sm:ml-2">
+                        <div class="relative flex-1 bg-slate-50 border border-slate-200 rounded-lg focus-within:bg-white focus-within:border-[var(--corp-blue-light)] focus-within:ring-2 focus-within:ring-blue-100 transition-all overflow-hidden flex">
+                            <div class="pl-3 flex items-center justify-center text-slate-400">
+                                <i class="ph-regular ph-door text-base"></i>
+                            </div>
+                            <input type="text" id="custom-room-input" data-i18n-placeholder="ph_room_name" placeholder="ชื่อห้องที่ต้องการเพิ่ม..." class="flex-1 py-2 px-2 bg-transparent border-none focus:outline-none ring-0 text-sm font-medium text-slate-700">
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                            <div class="relative flex-1 sm:w-48 lg:w-56 bg-slate-50 border border-slate-200 rounded-lg focus-within:bg-white focus-within:border-[var(--corp-blue-light)] focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                                <select id="custom-room-floor" class="w-full pl-3 pr-8 py-2.5 bg-transparent border-none outline-none appearance-none text-sm font-medium text-slate-700 cursor-pointer">
+                                    <!-- Options populated by JS base on selected building -->
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                    <i class="ph-bold ph-caret-down text-xs"></i>
+                                </div>
+                            </div>
+                            
+                            <button type="button" onclick="addCustomRoom()" class="shrink-0 w-full sm:w-auto bg-[var(--corp-blue)] hover:bg-[var(--corp-blue-light)] text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap">
+                                <i class="ph-bold ph-plus"></i> <span data-i18n="btn_add_room">เพิ่ม</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SCHEDULE SECTION (Delay 0.5s) -->
+            <div class="form-card stagger-up delay-500">
+                <div class="section-header mb-4">
+                    <div class="icon-circle"><i class="ph-fill ph-clock"></i></div>
+                    <div class="section-title" data-i18n="sec_schedule">กำหนดการ (Schedule)</div>
+                </div>
+                <!-- Layout Horizontal สำหรับ Schedule -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group h-full flex flex-col justify-center">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500"></div>
+                        <div class="text-xs font-bold text-green-600 uppercase mb-2 flex items-center gap-2">
+                            <i class="ph-fill ph-sign-in"></i> <span data-i18n="lbl_start">เวลาเข้า (Start)</span>
+                        </div>
+                        <div class="flex flex-col xl:flex-row gap-2">
+                            <div class="flex gap-2 flex-1 min-w-0" id="start-date-group"></div>
+                            <input type="hidden" name="start_date" id="start_date_hidden">
+                            <div class="flex gap-2 items-center w-full xl:w-auto" id="start-time-group"></div>
+                            <input type="hidden" name="start_time" id="start_time_hidden">
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group h-full flex flex-col justify-center">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+                        <div class="text-xs font-bold text-red-500 uppercase mb-2 flex items-center gap-2">
+                            <i class="ph-fill ph-sign-out"></i> <span data-i18n="lbl_end">เวลาออก (Finish)</span>
+                        </div>
+                        <div class="flex flex-col xl:flex-row gap-2">
+                            <div class="flex gap-2 flex-1 min-w-0" id="end-date-group"></div>
+                            <input type="hidden" name="end_date" id="end_date_hidden">
+                            <div class="flex gap-2 items-center w-full xl:w-auto" id="end-time-group"></div>
+                            <input type="hidden" name="end_time" id="end_time_hidden">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Workers (Delay 0.6s) -->
+            <div class="form-card stagger-up delay-600">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                    <div class="section-header mb-0">
+                        <div class="icon-circle"><i class="ph-fill ph-users-three"></i></div>
+                        <div class="section-title" data-i18n="sec_workers">รายชื่อผู้ปฏิบัติงาน</div>
+                    </div>
+                    <button type="button" id="add-worker-btn" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-[var(--corp-blue)] hover:text-white transition-all shadow-sm border border-slate-200 shrink-0">
+                        <i class="ph-bold ph-plus md:text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3" id="worker-list-container">
+                    <!-- รายชื่อผู้ปฏิบัติงานจะถูกเพิ่มเข้ามาในนี้โดย JavaScript -->
+                </div>
+            </div>
+
+            <!-- 7. Signature (Delay 0.7s) -->
+            <div class="form-card bg-white border-t-4 border-t-red-400 stagger-up delay-700">
+                <div class="section-header mb-2 md:mb-3">
+                    <div class="icon-circle" style="background:#fee2e2; color:#ef4444;"><i class="ph-fill ph-pen-nib"></i></div>
+                    <div class="section-title" style="margin-bottom:0;" data-i18n="sec_sig">ส่วนลงนาม (Signature)</div>
+                </div>
+                
+                <p class="text-slate-500 text-[11px] md:text-sm mb-5 md:mb-8 text-center bg-slate-50 py-2 md:py-3 px-2 rounded-xl border border-slate-100 leading-tight" data-i18n="sig_note">กรุณาพิมพ์เอกสารและลงนามจริงในช่องด้านล่าง (Please sign after printing)</p>
+
+                <div class="sig-grid">
+                    <div>
+                        <!-- SIGNATURE WRAPPER -->
+                        <div class="sig-wrapper relative">
+                            <div class="sig-box-dashed signature-container relative">
+                                <i class="ph-duotone ph-pen-nib sig-icon-center absolute opacity-50"></i>
+                                <canvas id="signature-pad"></canvas>
+                                <div class="absolute bottom-2 right-2 z-20">
+                                    <button type="button" onclick="clearSignature()" class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded hover:bg-red-50 hover:text-red-500">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sig-label-area">
+                            <div class="sig-role" data-i18n="sig_req_role">Requester</div>
+                            <div class="sig-sub" data-i18n="sig_req_sub">ผู้ขอ</div>
+                            <div class="sig-date">Date: <span id="current-sig-date">______/______/______</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="sig-box-dashed bg-slate-50 cursor-not-allowed">
+                            <span class="sig-placeholder text-slate-300">Approver Sign</span>
+                        </div>
+                        <div class="sig-label-area">
+                            <div class="sig-role" data-i18n="sig_app_role">Supervisor</div>
+                            <div class="sig-sub" data-i18n="sig_app_sub">ผู้อนุมัติ</div>
+                            <div class="sig-date">Date: ______/______/______</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 md:mt-10 bg-red-50 border border-red-100 rounded-xl p-3 flex items-center justify-center gap-2 md:gap-3 text-center">
+                    <i class="ph-fill ph-warning-circle text-red-500 text-lg shrink-0"></i>
+                    <span class="text-red-500 text-[11px] md:text-sm font-medium leading-tight" data-i18n="sig_warn">เอกสารต้องได้รับการลงนามครบถ้วนก่อนเข้าพื้นที่ (Unsigned forms will not be processed)</span>
+                </div>
+            </div>
+
+            <!-- 8. Action Bar (Delay 0.8s) -->
+            <div class="mt-4 md:mt-6 mb-8 flex justify-center stagger-up delay-700 px-1">
+                <div class="w-full max-w-[500px] bg-white rounded-[50px] p-1.5 md:p-2 pl-4 md:pl-6 shadow-[0_8px_24px_-6px_rgba(0,28,84,0.08)] border border-[var(--border-color)] flex items-center justify-between gap-3 hover:shadow-[0_12px_32px_-4px_rgba(0,28,84,0.12)] transition-shadow">
+                    <div class="hidden sm:flex items-center gap-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="text-xs font-bold text-slate-400 tracking-wider">READY</span>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <button type="button" class="px-4 py-2 md:py-3 rounded-full text-xs font-bold text-slate-500 hover:bg-slate-100 transition-colors uppercase tracking-wide flex items-center justify-center shrink-0" data-i18n="btn_prev">Preview</button>
+                        <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-[var(--corp-blue)] to-[var(--corp-blue-light)] text-white rounded-full px-5 md:px-8 py-2.5 md:py-3 text-sm font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-95 whitespace-nowrap">
+                            <span data-i18n="btn_submit">Submit Form</span> <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 z-[1000] modal-overlay hidden justify-center items-center p-4">
+        <div class="bg-white rounded-[20px] w-full max-w-[340px] p-6 md:p-8 text-center shadow-2xl modal-content" id="modal-content">
+            <div class="w-14 h-14 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-check-circle text-4xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 mb-2" data-i18n="modal_success_title">ส่งข้อมูลสำเร็จ!</h2>
+            <p class="text-[13px] text-slate-500 mb-6" data-i18n="modal_success_desc">ระบบกำลังนำท่านไปยังหน้ารออนุมัติ</p>
+            
+            <!-- Progress Bar -->
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-1">
+                <div class="h-full bg-green-500 w-0 transition-all duration-[1500ms] ease-linear rounded-full" id="modal-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //  URL ของ Google Apps Script  
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxUkrSNwaQNUrCBRvUoYMhCSun6IJ9ARejqbkqITJnSs3i2_uzzYiA-5LdkMMVt9Pk/exec";
+
+        // Signature
+        const canvas = document.getElementById('signature-pad');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false, hasSignature = false;
+
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            ctx.scale(ratio, ratio);
+            ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#001C54';
+        }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 500);
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+        function startDraw(e) {
+            e.preventDefault(); isDrawing = true; hasSignature = true;
+            const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y);
+            const sigWrapper = document.querySelector('.sig-wrapper');
+            if(sigWrapper) removeTooltip(sigWrapper);
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault(); const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke();
+        }
+        function endDraw() { isDrawing = false; }
+        
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('touchstart', startDraw, {passive: false}); 
+        canvas.addEventListener('touchmove', draw, {passive: false}); 
+        canvas.addEventListener('touchend', endDraw);
+        
+        window.clearSignature = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSignature = false; };
+
+        // ตัวแปรสำหรับกลุ่มวันที่และเวลา
+        const dateGroups = [
+            { cid: 'start-date-group', hid: 'start_date_hidden' },
+            { cid: 'end-date-group', hid: 'end_date_hidden' }
+        ];
+        const timeGroups = [
+            { cid: 'start-time-group', hid: 'start_time_hidden' },
+            { cid: 'end-time-group', hid: 'end_time_hidden' }
+        ];
+
+        function renderDateSelects(lang) {
+            dateGroups.forEach(g => {
+                const c = document.getElementById(g.cid);
+                const h = document.getElementById(g.hid);
+                if (!c || !h) return;
+
+                let selD = '', selM = '', selY = '';
+                if (c.children.length === 3 && c.children[0].value !== "") {
+                    selD = c.children[0].value;
+                    selM = c.children[1].value;
+                    selY = c.children[2].value;
+                }
+
+                c.innerHTML = ''; 
+                const d = document.createElement('select'), m = document.createElement('select'), y = document.createElement('select');
+                d.className = m.className = y.className = 'custom-select min-w-0 flex-1'; 
+                
+                const dayLabel = lang === 'th' ? 'วัน' : 'Day';
+                const monthLabel = lang === 'th' ? 'เดือน' : 'Month';
+                const yearLabel = lang === 'th' ? 'ปี' : 'Year';
+
+                d.innerHTML = `<option value="">${dayLabel}</option>`; 
+                for(let i=1; i<=31; i++) d.innerHTML += `<option value="${i}" ${selD == i ? 'selected' : ''}>${i}</option>`;
+                
+                m.innerHTML = `<option value="">${monthLabel}</option>`; 
+                const months = lang === 'th' ? thaiMonths : engMonths;
+                months.forEach((n, i) => m.innerHTML += `<option value="${i+1}" ${selM == (i+1) ? 'selected' : ''}>${n}</option>`);
+                
+                y.innerHTML = `<option value="">${yearLabel}</option>`; 
+                for(let i=currentYear; i<=currentYear+5; i++) {
+                    let displayYear = lang === 'th' ? i + 543 : i;
+                    y.innerHTML += `<option value="${i}" ${selY == i ? 'selected' : ''}>${displayYear}</option>`;
+                }
+
+                const up = () => { 
+                    h.value = (d.value && m.value && y.value) ? `${y.value}-${String(m.value).padStart(2,'0')}-${String(d.value).padStart(2,'0')}` : ''; 
+                    if(h.value) removeTooltip(c.parentElement); 
+                };
+                [d,m,y].forEach(s => { s.addEventListener('change', up); c.appendChild(s); });
+            });
+        }
+        
+        function renderTimeSelects(lang) {
+            timeGroups.forEach(g => {
+                const c = document.getElementById(g.cid);
+                const h = document.getElementById(g.hid);
+                if (!c || !h) return;
+
+                let selHr = '', selMn = '';
+                if(c.children.length === 3 && c.children[0].value !== "") {
+                    selHr = c.children[0].value;
+                    selMn = c.children[2].value;
+                }
+
+                c.innerHTML = '';
+                const hr = document.createElement('select'), mn = document.createElement('select');
+                hr.className = mn.className = 'custom-select min-w-0 flex-1'; 
+                
+                const hrLabel = lang === 'th' ? 'ชม.' : 'Hr.';
+                const mnLabel = lang === 'th' ? 'นาที' : 'Min.';
+
+                hr.innerHTML = `<option value="">${hrLabel}</option>`; 
+                for(let i=0; i<=23; i++) {
+                    let val = i.toString().padStart(2,'0');
+                    hr.innerHTML += `<option value="${val}" ${selHr == val ? 'selected' : ''}>${val}</option>`;
+                }
+                
+                mn.innerHTML = `<option value="">${mnLabel}</option>`; 
+                for(let i=0; i<=59; i+=5) {
+                    let val = i.toString().padStart(2,'0');
+                    mn.innerHTML += `<option value="${val}" ${selMn == val ? 'selected' : ''}>${val}</option>`;
+                }
+
+                const up = () => { 
+                    h.value = (hr.value && mn.value) ? `${hr.value}:${mn.value}` : ''; 
+                    if(h.value) removeTooltip(c.parentElement);
+                };
+                [hr,mn].forEach(s => { s.addEventListener('change', up); }); 
+                c.append(hr, Object.assign(document.createElement('span'), {innerText:':', className:'px-1 font-bold flex items-center text-slate-400 shrink-0'}), mn);
+            });
+        }
+
+        // -----------------------------------------------------
+        // Validation System: แสดงข้อความเตือนด้านล่างช่อง
+        // -----------------------------------------------------
+        function removeTooltip(parent) {
+            if(!parent) return;
+            const existing = parent.querySelector('.validation-msg');
+            if(existing) existing.remove();
+            
+            // ยกเลิกขอบแดงของทุกช่องใน parent นี้
+            parent.querySelectorAll('input, select, .sig-box-dashed, .card-content').forEach(el => {
+                el.style.borderColor = '';
+                el.style.boxShadow = '';
+                el.classList.remove('input-error');
+            });
+            parent.classList.remove('input-error-container');
+        }
+
+        function showTooltip(parent, message) {
+            if(!parent || parent.querySelector('.validation-msg')) return; 
+            
+            if (!message) {
+                message = currentLang === 'th' ? 'กรุณากรอกข้อมูลช่องนี้' : 'Please fill out this field';
+            }
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'validation-msg';
+            tooltip.innerText = message;
+            parent.appendChild(tooltip);
+            
+            // ใส่ขอบแดงให้ทุกช่องใน parent นี้
+            parent.querySelectorAll('input:not([type=hidden]), select, .sig-box-dashed').forEach(el => {
+                el.classList.add('input-error');
+            });
+            
+            if(parent.id === 'risk-container' || parent.id === 'user-type-container') {
+                parent.classList.add('input-error-container');
+            }
+        }
+
+        // ซ่อนกรอบแดงเมื่อเริ่มพิมพ์ข้อมูล หรือ เลือกข้อมูลทันที
+        ['input', 'change'].forEach(evt => {
+            document.addEventListener(evt, function(e) {
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                    const parent = e.target.closest('.relative') || e.target.closest('#risk-container') || e.target.closest('#user-type-container');
+                    if(parent) {
+                        if(e.target.type === 'radio' || e.target.type === 'checkbox') {
+                            removeTooltip(parent);
+                        } else if (e.target.value.trim() !== '') {
+                            removeTooltip(parent);
+                        }
+                    }
+                }
+            });
+        });
+
+        // -----------------------------------------------------
+        // Success Modal & Submit System
+        // -----------------------------------------------------
+        function showSuccessModal(docId = null) {
+            const modal = document.getElementById('success-modal');
+            const modalContent = document.getElementById('modal-content');
+            const progressBar = document.getElementById('modal-progress');
+            
+            // แสดง Modal
+            modal.style.display = 'flex';
+            // Trigger animation
+            setTimeout(() => {
+                modalContent.classList.add('show');
+                progressBar.style.width = '100%';
+            }, 50);
+
+            // เปลี่ยนหน้าหลังจากโหลดหลอดเสร็จ
+            setTimeout(() => {
+                // ป้องกัน Error ในหน้า Preview
+                if (window.location.protocol === 'blob:') {
+                    console.log("[Preview Mode] Redirect to Success/Dashboard");
+                    modal.style.display = 'none';
+                    modalContent.classList.remove('show');
+                    progressBar.style.width = '0%';
+                    return;
+                }
+                
+                const d = new Date();
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                
+                // ใช้ ID ที่ได้จาก backend หรือถ้าไม่มีให้สร้าง mock (เฉพาะตอน dev)
+                const finalDocId = docId || (`AS${y}${m}${day}001`);
+                window.location.href = `success.html?id=${finalDocId}`;
+            }, 1600);
+        }
+
+        window.saveData = async () => {
+            const form = document.getElementById('main-form');
+            
+            // ล้างแจ้งเตือนอันเก่าออกทั้งหมดก่อนเช็คใหม่
+            document.querySelectorAll('.validation-msg').forEach(el => el.remove());
+            document.querySelectorAll('input, select, .sig-box-dashed').forEach(el => {
+                el.classList.remove('input-error');
+                el.style.borderColor = '';
+                el.style.boxShadow = '';
+            });
+            const riskC = document.getElementById('risk-container');
+            if(riskC) riskC.classList.remove('input-error-container');
+
+            let isValid = true;
+            let firstInvalid = null;
+
+            // 1. ตรวจสอบช่องบังคับกรอก (Text inputs)
+            const requiredFields = form.querySelectorAll('input[required]');
+            for(const field of requiredFields) {
+                if (field.type === 'radio' || field.type === 'checkbox') continue; // ข้าม Radio ไปเช็คแยก
+
+                if(!field.value.trim()) {
+                    isValid = false;
+                    const parent = field.closest('.relative');
+                    if(parent) {
+                        showTooltip(parent);
+                        if(!firstInvalid) firstInvalid = field;
+                    }
+                }
+            }
+
+            // 1.2 ตรวจสอบ User Type (Radio) ที่แก้ไขกลุ่มให้เหลืออันเดียว
+            const userTypeSelected = form.querySelector('input[name="user_type"]:checked');
+            if(!userTypeSelected) {
+                isValid = false;
+                const typeContainer = document.getElementById('user-type-container');
+                if(typeContainer) {
+                    showTooltip(typeContainer, currentLang === 'th' ? 'กรุณาเลือกประเภทผู้ขอเข้าปฏิบัติงานให้ครบถ้วน' : 'Please select your User Type completely');
+                    if(!firstInvalid) firstInvalid = typeContainer;
+                }
+            }
+
+            // 1.5 ตรวจสอบ Hot Work Risk (Radio)
+            const riskSelected = form.querySelector('input[name="risk"]:checked');
+            if(!riskSelected) {
+                isValid = false;
+                const riskContainer = document.getElementById('risk-container');
+                if(riskContainer) {
+                    showTooltip(riskContainer, currentLang === 'th' ? 'กรุณาระบุระดับความเสี่ยง' : 'Please specify risk level');
+                    if(!firstInvalid) firstInvalid = riskContainer;
+                }
+            }
+
+            // 2. ตรวจสอบช่องวันที่และเวลา (Hidden inputs)
+            const validateHidden = (hiddenId, groupId) => {
+                const hidden = document.getElementById(hiddenId);
+                if(!hidden.value) {
+                    isValid = false;
+                    const group = document.getElementById(groupId); 
+                    const parent = group.parentElement; 
+                    showTooltip(parent);
+                    if(!firstInvalid) firstInvalid = group;
+                }
+            };
+            validateHidden('start_date_hidden', 'start-date-group');
+            validateHidden('start_time_hidden', 'start-time-group');
+            validateHidden('end_date_hidden', 'end-date-group');
+            validateHidden('end_time_hidden', 'end-time-group');
+
+            // 3. ตรวจสอบลายเซ็น
+            if(!hasSignature) {
+                isValid = false;
+                const sigWrapper = document.querySelector('.sig-wrapper');
+                let sigMsg = currentLang === 'th' ? 'กรุณาเซ็นชื่อรับรอง' : 'Please sign here';
+                
+                if(sigWrapper) {
+                    showTooltip(sigWrapper, sigMsg);
+                    if(!firstInvalid) firstInvalid = sigWrapper;
+                }
+            }
+
+            if(!isValid) {
+                if(firstInvalid) {
+                    firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    if(firstInvalid.tagName === 'INPUT') firstInvalid.focus();
+                }
+                return;
+            }
+
+            // ถ่าผ่านให้แสดง Loading
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                const formData = new FormData(form);
+                
+                // --- จัดการ User Type (แปลงกลับเป็น req_type หรือ req_cat เพื่อส่งให้หลังบ้าน) ---
+                const selectedUserType = formData.get('user_type');
+                formData.delete('user_type');
+                if (selectedUserType === 'Internal' || selectedUserType === 'Subcontractor') {
+                    formData.append('req_type', selectedUserType);
+                    formData.append('req_cat', '');
+                } else if (selectedUserType === 'Customer' || selectedUserType === 'Vendor') {
+                    formData.append('req_type', '');
+                    formData.append('req_cat', selectedUserType);
+                }
+
+                // --- จัดการรวมข้อมูลชื่อ-นามสกุล ---
+                const reqFname = formData.get('requester_fname') || '';
+                const reqLname = formData.get('requester_lname') || '';
+                const reqFullName = (reqFname + ' ' + reqLname).trim();
+                formData.append('requester_name', reqFullName);
+                formData.delete('requester_fname');
+                formData.delete('requester_lname');
+
+                // --- จัดการ Work Type ที่มีการพิมพ์เพิ่มเติม ---
+                const workTypes = formData.getAll('work_type');
+                formData.delete('work_type'); 
+                
+                workTypes.forEach(wt => {
+                    if (wt === 'Maintenance') {
+                        const spec = document.getElementById('specify_maintenance').value.trim();
+                        formData.append('work_type', spec ? `Maintenance: ${spec}` : 'Maintenance');
+                    } else if (wt === 'Other') {
+                        const spec = document.getElementById('specify_other').value.trim();
+                        formData.append('work_type', spec ? `Other: ${spec}` : 'Other');
+                    } else {
+                        formData.append('work_type', wt);
+                    }
+                });
+
+                if (hasSignature) {
+                    formData.append('signature', canvas.toDataURL('image/png'));
+                }
+
+                // ข้ามการ Fetch ถ้าอยู่ในโหมดพรีวิว
+                if (window.location.protocol === 'blob:' || window.location.protocol === 'about:') {
+                    console.log("[Preview Mode] Skipping fetch, simulating success.");
+                    setTimeout(() => {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        const d = new Date();
+                        const y = d.getFullYear();
+                        const m = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        showSuccessModal(`AS${y}${m}${day}001`);
+                    }, 1000);
+                    return;
+                }
+
+                const apiUrl = '/save_data';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // ยิง API แจ้งเตือนแอดมิน ผ่าน Google Apps Script 
+                    try {
+                        const reqCompany = formData.get('company') || '';
+                        const mailData = new FormData();
+                        mailData.append('action', 'notify_admin_doc');
+                        mailData.append('req_id', result.id);
+                        mailData.append('req_name', reqFullName); // ใช้ชื่อที่รวมกันแล้ว
+                        mailData.append('req_company', reqCompany);
+                        mailData.append('admin_emails', result.admin_emails); // 🌟 เพิ่มบรรทัดนี้: ส่งรายชื่ออีเมลแอดมินทั้งหมดไปให้ GAS 🌟
+                        mailData.append('lang', currentLang);
+                        
+                        fetch(GAS_URL, { method: 'POST', body: mailData, mode: 'no-cors' });
+                    } catch(e) { console.error("Email notification error:", e); }
+
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    showSuccessModal(result.id);
+                } else {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    alert(result.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+                }
+
+            } catch (error) {
+                console.error('Save Data Error:', error);
+                document.getElementById('loading-overlay').style.display = 'none';
+                
+                if (window.location.protocol === 'blob:' || window.location.protocol === 'about:') {
+                    const d = new Date();
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    showSuccessModal(`AS${y}${m}${day}001`);
+                } else {
+                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                }
+            }
+        };
+
+        // 🌟 เพิ่มระบบให้สามารถกดยกเลิก Radio Button ได้เมื่อกดซ้ำข้อเดิม 🌟
+        let lastCheckedState = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAreas(); 
+            setLanguage(currentLang);
+            updateRealTimeRequest();
+            setInterval(updateRealTimeRequest, 1000); // อัปเดตวิละครั้ง
+            
+            document.getElementById('custom-room-input').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomRoom();
+                }
+            });
+
+            // 🌟 ผูกอีเวนต์คลิกให้กับ Radio Buttons ทั้งหมดบนหน้าเว็บ 🌟
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                if (radio.checked) lastCheckedState[radio.name] = radio.value;
+                
+                radio.addEventListener('click', function(e) {
+                    if (lastCheckedState[this.name] === this.value) {
+                        this.checked = false;
+                        lastCheckedState[this.name] = null;
+                    } else {
+                        lastCheckedState[this.name] = this.value;
+                        const parent = this.closest('.selection-card');
+                        if(parent && parent.parentElement && parent.parentElement.parentElement) {
+                            removeTooltip(parent.parentElement.parentElement);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

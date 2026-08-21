@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard - Demo Company Official</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- 🌟 SheetJS & ExcelJS สำหรับดาวน์โหลด Excel 🌟 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            --corp-red:         #D9232A; 
+            
+            --text-main:        #1e293b;
+            --text-muted:       #64748b;
+            --border-line:      #e2e8f0;
+        }
+
+        /* ---  Animated Background --- */
+        body { 
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #e2e8f0, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Dot Pattern Overlay */
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.6;
+        }
+
+        .text-corp-main { color: var(--corp-blue) !important; }
+        .text-corp-light { color: var(--corp-blue-light) !important; }
+
+        /* ---  Premium Cards with Hover Glow  --- */
+        .dashboard-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px -10px rgba(0,28,84,0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 40px -10px rgba(0,28,84,0.12);
+        }
+
+        /* Card Specific Glows */
+        .card-blue:hover { box-shadow: 0 20px 40px -10px rgba(42, 86, 198, 0.2); border-color: #bfdbfe; }
+        .card-orange:hover { box-shadow: 0 20px 40px -10px rgba(249, 115, 22, 0.2); border-color: #fed7aa; }
+        .card-green:hover { box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.2); border-color: #a7f3d0; }
+        .card-red:hover { box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.2); border-color: #fecaca; }
+        .card-purple:hover { box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.2); border-color: #e9d5ff; }
+
+        /* Floating Navbar */
+        .floating-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08); 
+            border-radius: 50px;
+            position: relative; z-index: 50;
+        }
+
+        /* ---  Animated Icons inside Cards  --- */
+        .stat-icon-bg {
+            position: absolute; right: -15px; bottom: -20px;
+            font-size: 5.5rem; opacity: 0.05; pointer-events: none;
+            transform: rotate(-15deg); 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @media (min-width: 768px) { .stat-icon-bg { font-size: 7.5rem; right: -20px; bottom: -25px; } }
+        
+        .dashboard-card:hover .stat-icon-bg {
+            opacity: 0.15;
+            transform: rotate(0deg) scale(1.15) translateY(-10px);
+        }
+
+        /* Status Badges */
+        .status-badge { 
+            padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; 
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .st-pending { background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #c2410c; border: 1px solid #fed7aa; }
+        .st-approved { background: linear-gradient(135deg, #f0fdf4, #dcfce7); color: #15803d; border: 1px solid #bbf7d0; }
+        .st-rejected { background: linear-gradient(135deg, #fef2f2, #fee2e2); color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* Modern Table */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0.5rem 0.5rem 0.5rem; }
+        .modern-table { border-spacing: 0 8px; border-collapse: separate; width: 100%; min-width: 800px; }
+        .modern-table th { padding: 1rem; text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+        .modern-table td { background: white; padding: 1rem; transition: all 0.2s; border-top: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; font-size: 0.9rem;}
+        .modern-table tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; border-left: 1px solid #f8fafc; }
+        .modern-table tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-right: 1px solid #f8fafc; }
+        
+        .modern-table tr:hover td { background: #f8fafc; border-color: #e2e8f0; transform: scale(1.002); }
+
+        /* Pagination Styles */
+        .page-btn {
+            width: 32px; height: 32px; display: inline-flex; justify-content: center; align-items: center;
+            border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+            background: white; border: 1px solid var(--border-line); color: var(--text-muted);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .page-btn:hover:not(:disabled) { border-color: var(--corp-blue); color: var(--corp-blue); background: #f0f4ff; }
+        .page-btn.active { background: var(--corp-blue); color: white; border-color: var(--corp-blue); box-shadow: 0 4px 10px rgba(0,28,84,0.2); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Language Button */
+        .lang-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: white; padding: 0.4rem 0.8rem; border-radius: 50px;
+            border: 1px solid var(--border-line); transition: all 0.3s; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .lang-btn:hover { background: #f8fafc; border-color: var(--corp-blue-light); box-shadow: 0 4px 12px rgba(42, 86, 198, 0.1); transform: translateY(-1px); }
+
+        /* ---  Bouncy Stagger Animations  --- */
+        @keyframes popInBouncy {
+            0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+            60% { opacity: 1; transform: translateY(-10px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .stagger-up { opacity: 0; animation: popInBouncy 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; } .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        .loader { width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: var(--corp-blue); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen py-4 md:py-6 lg:py-8 px-3 md:px-6 lg:px-8 relative">
+
+    <div class="bg-pattern"></div>
+
+    <!-- Navbar -->
+    <nav class="relative z-50 mx-auto w-full max-w-7xl floating-nav px-4 py-2.5 md:px-6 md:py-3 flex justify-between items-center mb-6 md:mb-8 stagger-up delay-100">
+        <div class="flex items-center gap-3 md:gap-5">
+            <img src="{{ BRAND_LOGO_URL }}" 
+                 class="h-7 md:h-9 lg:h-10 object-contain hover:scale-105 transition-transform" 
+                 onerror="this.style.display='none'">
+            <div class="h-5 md:h-7 w-px bg-slate-200 hidden sm:block"></div>
+            <div class="flex flex-col hidden sm:flex">
+                <span class="text-[9px] lg:text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em] leading-tight">System</span>
+                <span class="text-sm md:text-base lg:text-lg font-extrabold text-corp-main leading-none">DEMO ADMIN PORTAL</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 md:gap-5">
+            
+            <button onclick="toggleLanguage()" class="lang-btn mr-1 md:mr-2">
+                <img id="lang-flag-img" src="https://flagcdn.com/w40/th.png" class="w-4 md:w-5 h-auto rounded-[2px] shadow-sm">
+                <span id="lang-btn-text" class="font-extrabold text-slate-600 text-[10px] md:text-xs">EN</span>
+            </button>
+
+            <div class="hidden sm:block text-right">
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide" data-i18n="welcome">Welcome Admin</div>
+                <div class="text-sm font-extrabold text-corp-main leading-tight max-w-[150px] truncate" id="admin-name">Loading...</div>
+            </div>
+            
+            <!-- สัญลักษณ์ยศ -->
+            <div class="relative cursor-pointer group" onclick="window.location.href='admin_edit_profile.html'" title="แก้ไขโปรไฟล์ส่วนตัว">
+                <div id="role-icon-bg" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-gradient-to-tr from-[var(--corp-red)] to-red-400 text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-red-200 shrink-0 group-hover:scale-105 transition-transform overflow-hidden relative">
+                    <i id="role-icon" class="ph-bold ph-shield-star absolute z-10"></i>
+                    <img id="admin-profile-img" src="" class="absolute inset-0 w-full h-full object-cover hidden z-20">
+                    <div class="absolute inset-0 bg-black/40 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="ph-bold ph-pencil-simple text-white"></i>
+                    </div>
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-40"></div>
+            </div>
+
+            <button onclick="logout()" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-white border border-slate-200 text-slate-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 flex items-center justify-center transition-all shadow-sm active:scale-95" title="Logout">
+                <i class="ph-bold ph-power text-xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header & Refresh -->
+        <div class="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-2 stagger-up delay-200">
+            <div>
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-corp-main tracking-tight" data-i18n="dash_title">Dashboard</h1>
+                <p class="text-slate-500 text-sm md:text-base mt-2 font-medium" data-i18n="dash_desc">จัดการและตรวจสอบคำขอเข้าพื้นที่ปฏิบัติงานแบบเรียลไทม์</p>
+            </div>
+            <button onclick="loadData()" class="group bg-white border border-slate-200 text-slate-600 hover:text-white hover:bg-[var(--corp-blue)] hover:border-[var(--corp-blue)] px-5 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95 w-full sm:w-auto">
+                <i class="ph-bold ph-arrows-clockwise text-lg group-hover:animate-spin"></i> <span data-i18n="btn_refresh">รีเฟรชข้อมูล</span>
+            </button>
+        </div>
+
+        <!--  Stats Cards  -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5 mb-8 md:mb-10 stagger-up delay-300">
+            <div class="dashboard-card card-blue p-5 lg:p-6 border-t-4 border-corp-main relative overflow-hidden group flex flex-col justify-between cursor-pointer" onclick="filterByCard('')" title="ดูรายการทั้งหมด">
+                <div class="text-slate-400 text-xs font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 z-10"><i class="ph-fill ph-files"></i> <span data-i18n="stat_all">ทั้งหมด</span></div>
+                <div class="flex items-baseline gap-1.5 z-10">
+                    <div class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tighter" id="count-total">0</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase" data-i18n="unit_req">รายการ</div>
+                </div>
+                <i class="ph-duotone ph-files stat-icon-bg text-corp-main"></i>
+            </div>
+            
+            <div class="dashboard-card card-orange p-5 lg:p-6 border-t-4 border-orange-400 relative overflow-hidden group flex flex-col justify-between cursor-pointer" onclick="openStatusListModal('Pending')" title="คลิกเพื่อดูรายการรออนุมัติ">
+                <div class="text-orange-500 text-xs font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 z-10"><i class="ph-fill ph-clock-countdown"></i> <span data-i18n="stat_pending">รออนุมัติ</span></div>
+                <div class="flex items-baseline gap-1.5 z-10">
+                    <div class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tighter" id="count-pending">0</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase" data-i18n="unit_req">รายการ</div>
+                </div>
+                <i class="ph-duotone ph-clock-countdown stat-icon-bg text-orange-500"></i>
+            </div>
+
+            <div class="dashboard-card card-green p-5 lg:p-6 border-t-4 border-green-500 relative overflow-hidden group flex flex-col justify-between cursor-pointer" onclick="openStatusListModal('Approved')" title="คลิกเพื่อดูรายการอนุมัติแล้ว">
+                <div class="text-green-600 text-xs font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 z-10"><i class="ph-fill ph-check-circle"></i> <span data-i18n="stat_approved">อนุมัติแล้ว</span></div>
+                <div class="flex items-baseline gap-1.5 z-10">
+                    <div class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tighter" id="count-approved">0</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase" data-i18n="unit_req">รายการ</div>
+                </div>
+                <i class="ph-duotone ph-check-circle stat-icon-bg text-green-500"></i>
+            </div>
+
+            <div class="dashboard-card card-red p-5 lg:p-6 border-t-4 border-red-500 relative overflow-hidden group flex flex-col justify-between cursor-pointer" onclick="openStatusListModal('Rejected')" title="คลิกเพื่อดูรายการไม่อนุมัติ">
+                <div class="text-red-500 text-xs font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 z-10"><i class="ph-fill ph-x-circle"></i> <span data-i18n="stat_rejected">ไม่อนุมัติ</span></div>
+                <div class="flex items-baseline gap-1.5 z-10">
+                    <div class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tighter" id="count-rejected">0</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase" data-i18n="unit_req">รายการ</div>
+                </div>
+                <i class="ph-duotone ph-x-circle stat-icon-bg text-red-500"></i>
+            </div>
+
+            <div class="dashboard-card card-purple p-5 lg:p-6 border-t-4 border-purple-500 relative overflow-hidden group flex flex-col justify-between col-span-2 lg:col-span-1">
+                <div class="text-purple-600 text-xs font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 z-10"><i class="ph-fill ph-users"></i> <span data-i18n="stat_users">ผู้ใช้งาน</span></div>
+                <div class="flex items-baseline gap-1.5 z-10">
+                    <div class="text-4xl lg:text-5xl font-black text-slate-800 tracking-tighter" id="count-users">0</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase" data-i18n="unit_person">คน</div>
+                </div>
+                <i class="ph-duotone ph-users stat-icon-bg text-purple-500"></i>
+            </div>
+        </div>
+
+        <!--  Users Access Section  -->
+        <div class="dashboard-card p-0 overflow-hidden mb-8 md:mb-10 flex flex-col stagger-up delay-400 border-l-4 border-l-purple-500 border-t-0">
+            <div class="p-5 md:p-6 border-b border-slate-100 bg-white/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-extrabold text-base md:text-lg text-slate-800 flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="ph-fill ph-users-three text-xl"></i></div>
+                        <span data-i18n="users_title">รายชื่อบัญชีระบบ</span>
+                    </h3>
+                    <span class="text-xs font-black text-purple-600 bg-purple-100 px-3 py-1.5 rounded-full shadow-sm" id="user-count-badge">0</span>
+                </div>
+                
+                <!-- Search Box สำหรับค้นหา User -->
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="ph-bold ph-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <input type="text" id="search-user-input" onkeyup="filterUsers()" class="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 block pl-10 p-2.5 transition-all shadow-sm" data-i18n-placeholder="ph_search_user" placeholder="ค้นหาชื่อ, ยูสเซอร์เนม, อีเมล...">
+                </div>
+            </div>
+            
+            <!-- แท็บแยกประเภทผู้ใช้ (แสดงเฉพาะ Super Admin) -->
+            <div id="user-tabs-container" class="flex border-b border-slate-200 bg-slate-50/50 px-4 md:px-6" style="display: none;">
+                <button id="tab-btn-user" onclick="switchUserTab('user')" class="py-3 px-4 text-sm font-bold border-b-2 border-[var(--corp-blue)] text-[var(--corp-blue)] flex items-center gap-2 transition-colors">
+                    <i class="ph-fill ph-users"></i> <span data-i18n="tab_users">ผู้ใช้งานทั่วไป</span> <span class="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-[10px]" id="tab-count-user">0</span>
+                </button>
+                <button id="tab-btn-admin" onclick="switchUserTab('admin')" class="py-3 px-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 transition-colors">
+                    <i class="ph-fill ph-shield-star"></i> <span data-i18n="tab_admins">ผู้ดูแลระบบ</span> <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]" id="tab-count-admin">0</span>
+                </button>
+            </div>
+            
+            <div class="p-4 md:p-5 bg-slate-50/50 relative min-h-[160px]">
+                <div id="user-loading-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 hidden items-center justify-center rounded-b-xl"><div class="loader"></div></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2" id="users-list-container">
+                    <!-- Dynamic Users Content -->
+                </div>
+            </div>
+        </div>
+
+        <!--  Requests Table -->
+        <div class="dashboard-card p-0 overflow-hidden flex flex-col mb-10 stagger-up delay-500 border-l-4 border-l-corp-main border-t-0">
+            <div class="p-5 md:p-6 border-b border-slate-100 bg-white/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 relative">
+                
+                <h3 class="font-extrabold text-base md:text-lg text-slate-800 flex items-center gap-2 shrink-0">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 text-corp-main flex items-center justify-center"><i class="ph-fill ph-list-dashes text-xl"></i></div>
+                    <span data-i18n="recent_title">รายการคำขอล่าสุด</span>
+                </h3>
+                
+                <div class="flex flex-wrap w-full lg:w-auto gap-2 items-center justify-start lg:justify-end">
+                    
+                    <!-- Search Box -->
+                    <div class="relative flex-grow sm:flex-grow-0 sm:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="ph-bold ph-magnifying-glass text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-req-input" onkeyup="filterRequests()" class="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] focus:border-[var(--corp-blue-light)] block pl-10 p-2 h-10 transition-all shadow-sm" data-i18n-placeholder="ph_search_req" placeholder="ค้นหาเลข ID, ชื่อ, พื้นที่...">
+                    </div>
+
+                    <!-- ปุ่มตัวกรอง Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleFilterMenu()" id="btn-filter-toggle" class="bg-white border border-slate-200 text-slate-600 hover:text-[var(--corp-blue)] px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 h-10 shrink-0">
+                            <i class="ph-bold ph-funnel text-lg"></i> <span class="hidden sm:inline">ตัวกรอง</span>
+                        </button>
+
+                        <!-- เมนูตัวกรอง (ซ่อนไว้ตอนแรก) -->
+                        <div id="filter-menu" class="hidden absolute right-0 top-12 mt-1 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 animate-fade-up origin-top-right">
+                            <div class="mb-3 border-b border-slate-100 pb-2">
+                                <h4 class="font-extrabold text-sm text-[var(--corp-blue)]"><i class="ph-fill ph-funnel"></i> ตัวกรองข้อมูล</h4>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">เลือกวันที่</label>
+                                <input type="date" id="filter-date-input" onchange="filterRequests()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] px-3 py-2 shadow-sm font-medium h-10">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">สถานะคำขอ</label>
+                                <select id="filter-status-input" onchange="filterRequests()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] px-3 py-2 shadow-sm font-medium h-10 cursor-pointer">
+                                    <option value="">-- ทุกสถานะ --</option>
+                                    <option value="Pending">รออนุมัติ</option>
+                                    <option value="Approved">อนุมัติแล้ว</option>
+                                    <option value="Rejected">ไม่อนุมัติ</option>
+                                </select>
+                            </div>
+
+                            <button onclick="clearFilters()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition-colors mt-2">ล้างตัวกรองทั้งหมด</button>
+                        </div>
+                    </div>
+
+                    <!-- ปุ่มดาวน์โหลด Excel -->
+                    <button id="btn-export-excel" onclick="exportTableToExcel()" class="bg-[#16a34a] hover:bg-[#15803d] text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 h-10 shrink-0" title="ดาวน์โหลดตารางเป็น Excel">
+                        <i class="ph-bold ph-file-xls text-lg"></i> <span class="hidden sm:inline">Export Excel</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive bg-white min-h-[300px]">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-24 text-center pl-4 md:pl-6" data-i18n="th_id">Ref ID</th>
+                            <th data-i18n="th_date">วันที่ขอ</th>
+                            <th data-i18n="th_req">ผู้ขอ / หน่วยงาน</th>
+                            <th class="text-center" data-i18n="th_status">สถานะ</th>
+                            <th class="text-right pr-6" data-i18n="th_action">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-slate-600">
+                        <tr><td colspan="5" class="p-20 text-center"><div class="flex flex-col items-center gap-3"><div class="loader"></div><span class="text-sm font-bold text-slate-400">Loading...</span></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Container -->
+            <div class="p-4 md:p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold text-slate-500">
+                <span id="table-info" data-i18n="tbl_info">แสดงรายการล่าสุด</span>
+                <div id="pagination-controls" class="flex gap-1.5 flex-wrap justify-center">
+                    <!-- JS จะใส่ปุ่มแบ่งหน้าตรงนี้ -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Preview Modal -->
+    <div id="preview-modal" class="fixed inset-0 z-[4000] hidden items-center justify-center p-4 md:p-6">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0" id="preview-backdrop" onclick="closePreviewModal()"></div>
+        
+        <div class="bg-white rounded-[24px] w-full max-w-[650px] shadow-2xl relative z-10 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh] overflow-hidden" id="preview-card">
+            
+            <!-- Header -->
+            <div class="p-5 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 relative">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-100 text-corp-main flex items-center justify-center text-xl md:text-2xl shadow-sm">
+                        <i class="ph-duotone ph-file-text"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-base md:text-lg text-slate-800 leading-tight">ตัวอย่างคำขอ <span id="pv-id" class="text-corp-main ml-1"></span></h3>
+                        <p class="text-[11px] md:text-xs font-bold text-slate-500 mt-0.5"><i class="ph-bold ph-calendar-blank"></i> <span id="pv-date"></span></p>
+                    </div>
+                </div>
+                <button onclick="closePreviewModal()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors shadow-sm active:scale-95">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-5 md:p-6 overflow-y-auto custom-scrollbar flex-1 text-left bg-white">
+                <div class="space-y-4 md:space-y-5">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-user-circle"></i> ผู้ขอ / หน่วยงาน</div>
+                            <div class="font-bold text-slate-800 text-sm" id="pv-name"></div>
+                            <div class="text-[11px] text-slate-500 font-medium mt-0.5" id="pv-company"></div>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-phone"></i> เบอร์ติดต่อ</div>
+                            <div class="font-bold text-slate-800 text-sm" id="pv-mobile"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100">
+                        <div class="text-[10px] font-bold text-blue-500 uppercase mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-briefcase"></i> วัตถุประสงค์ (Objective)</div>
+                        <div class="font-extrabold text-corp-main text-sm md:text-base" id="pv-objective"></div>
+                        <div class="text-xs text-slate-600 mt-1.5 leading-relaxed bg-white p-2.5 rounded-lg border border-blue-50" id="pv-detail"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-map-pin"></i> พื้นที่ปฏิบัติงาน</div>
+                            <div class="font-medium text-slate-700 text-xs leading-relaxed" id="pv-areas"></div>
+                        </div>
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 flex items-center gap-1.5"><i class="ph-fill ph-clock"></i> เวลาเข้า-ออก</div>
+                            <div class="flex flex-col gap-1.5 mt-1">
+                                <div class="text-xs font-bold text-green-600 flex items-center gap-1.5"><span class="bg-green-100 px-1.5 rounded text-[9px]">IN</span> <span id="pv-start"></span></div>
+                                <div class="text-xs font-bold text-red-500 flex items-center gap-1.5"><span class="bg-red-100 px-1.5 rounded text-[9px]">OUT</span> <span id="pv-end"></span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
+                        <div class="text-xs font-bold text-slate-500 uppercase" data-i18n="th_status">สถานะปัจจุบัน:</div>
+                        <div id="pv-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="p-4 md:p-5 border-t border-slate-100 bg-slate-50 flex gap-3">
+                <button onclick="closePreviewModal()" class="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-100 transition-colors text-sm shadow-sm active:scale-95" data-i18n="btn_pv_close">ปิดตัวอย่าง</button>
+                <a href="#" id="pv-link" class="flex-[2] bg-[var(--corp-blue)] hover:bg-[var(--corp-blue-light)] text-white text-center font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 text-sm active:scale-95">
+                    <i class="ph-bold ph-magnifying-glass text-lg"></i> <span data-i18n="btn_pv_full">ตรวจสอบเอกสารฉบับเต็ม</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="custom-confirm-modal" class="fixed inset-0 z-[5000] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="confirm-backdrop"></div>
+        <div class="bg-white rounded-[24px] w-full max-w-[380px] p-6 md:p-8 text-center shadow-2xl relative z-10 transform scale-95 opacity-0 transition-all duration-300" id="confirm-card">
+            <div id="confirm-inner-circle" class="w-16 h-16 rounded-full flex items-center justify-center text-white mx-auto mb-4 shadow-lg"><i id="confirm-icon" class="text-4xl"></i></div>
+            <h3 id="confirm-title" class="text-xl font-extrabold text-slate-800 mb-2"></h3>
+            <p id="confirm-desc" class="text-sm text-slate-500 mb-8"></p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-50 active:scale-95 transition-all">ยกเลิก</button>
+                <button id="confirm-action-btn" class="flex-1 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status List Modal -->
+    <div id="status-list-modal" class="fixed inset-0 z-[5000] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0" id="status-list-backdrop" onclick="closeStatusListModal()"></div>
+        <div class="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative z-10 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[80vh] overflow-hidden" id="status-list-card">
+            <div class="p-5 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-extrabold text-lg text-slate-800 flex items-center gap-2" id="status-modal-title">
+                    รายการเอกสาร
+                </h3>
+                <button onclick="closeStatusListModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors shadow-sm active:scale-95">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 md:p-5 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div id="status-list-content" class="space-y-2">
+                    <!-- JS renders list here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxUkrSNwaQNUrCBRvUoYMhCSun6IJ9ARejqbkqITJnSs3i2_uzzYiA-5LdkMMVt9Pk/exec";
+        const isPreviewMode = window.location.protocol === 'blob:' || window.location.protocol === 'about:';
+
+        const translations = {
+            th: {
+                welcome: "ยินดีต้อนรับ ผู้ดูแลระบบ", dash_title: "Dashboard ภาพรวม", dash_desc: "จัดการและตรวจสอบคำขอเข้าพื้นที่ปฏิบัติงานแบบเรียลไทม์",
+                stat_all: "ทั้งหมด", stat_pending: "รออนุมัติ", stat_approved: "อนุมัติแล้ว", stat_rejected: "ไม่อนุมัติ", stat_users: "ผู้ใช้งาน",
+                recent_title: "รายการคำขอล่าสุด", users_title: "รายชื่อบัญชีระบบ", btn_refresh: "รีเฟรชข้อมูล",
+                th_id: "Ref ID", th_date: "วันที่ขอ", th_req: "ผู้ขอ / หน่วยงาน", th_status: "สถานะ", th_action: "จัดการ",
+                status_pending: "รออนุมัติ", status_approved: "อนุมัติแล้ว", status_rejected: "ปฏิเสธ",
+                btn_view: "ตรวจสอบ / อนุมัติ", btn_details: "ดูรายละเอียด", btn_download: "ดาวน์โหลด PDF", btn_preview: "ดูตัวอย่าง",
+                no_data: "ไม่พบข้อมูลคำขอ", no_users: "ไม่มีข้อมูลผู้ใช้", unit_req: "รายการ", unit_person: "คน",
+                btn_delete: "ลบผู้ใช้", btn_delete_req: "ลบคำขอ",
+                tbl_info: "แสดงรายการล่าสุด", btn_pv_close: "ปิดตัวอย่าง", btn_pv_full: "ตรวจสอบเอกสารฉบับเต็ม",
+                ph_search_user: "ค้นหาชื่อ, ยูสเซอร์เนม, อีเมล...",
+                ph_search_req: "ค้นหาเลข ID, ชื่อ, พื้นที่...",
+                tab_users: "ผู้ใช้งานทั่วไป", tab_admins: "ผู้ดูแลระบบ"
+            },
+            en: {
+                welcome: "Welcome Admin", dash_title: "Admin Dashboard", dash_desc: "Manage and review site access requests in real-time.",
+                stat_all: "Total", stat_pending: "Pending", stat_approved: "Approved", stat_rejected: "Rejected", stat_users: "Users",
+                recent_title: "Recent Requests", users_title: "System Accounts", btn_refresh: "Refresh Data",
+                th_id: "Ref ID", th_date: "Date", th_req: "Requester / Dept", th_status: "Status", th_action: "Action",
+                status_pending: "Pending", status_approved: "Approved", status_rejected: "Rejected",
+                btn_view: "Review / Approve", btn_details: "View Details", btn_download: "Download PDF", btn_preview: "Quick View",
+                no_data: "No requests found.", no_users: "No users found.", unit_req: "Reqs", unit_person: "Users",
+                btn_delete: "Delete User", btn_delete_req: "Delete Request",
+                tbl_info: "Showing recent requests", btn_pv_close: "Close", btn_pv_full: "Review Full Document",
+                ph_search_user: "Search name, username, email...",
+                ph_search_req: "Search ID, name, area...",
+                tab_users: "General Users", tab_admins: "Administrators"
+            }
+        };
+
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+        let globalRequests = [];
+        let globalUsers = [];
+        
+        let currentAdminRole = 'admin'; 
+        let activeUserTab = 'user';
+
+        // ตัวแปรสำหรับ Pagination
+        let reqCurrentPage = 1;
+        const reqItemsPerPage = 6; 
+        let reqFilteredData = [];
+
+        function setLanguage(lang) {
+            currentLang = lang; localStorage.setItem('site_lang', lang);
+            document.getElementById('lang-btn-text').innerText = lang === 'th' ? 'EN' : 'TH';
+            document.getElementById('lang-flag-img').src = lang === 'th' ? 'https://flagcdn.com/w40/gb.png' : 'https://flagcdn.com/w40/th.png';
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+            
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
+            });
+
+            if(globalRequests.length > 0) filterRequests();
+            if(globalUsers.length > 0) filterUsers();
+        }
+        function toggleLanguage() { setLanguage(currentLang === 'th' ? 'en' : 'th'); }
+
+        async function loadUserProfile() {
+            try {
+                if (isPreviewMode) throw new Error("PREVIEW");
+                const response = await fetch('/api/user_profile');
+                const result = await response.json();
+                if (result.success) {
+                    currentAdminRole = result.role || 'admin';
+                    renderUser(result);
+                    
+                    if(currentAdminRole === 'superadmin') {
+                        document.getElementById('role-icon-bg').classList.remove('from-[var(--corp-red)]', 'to-red-400', 'shadow-red-200');
+                        document.getElementById('role-icon-bg').classList.add('from-purple-600', 'to-indigo-400', 'shadow-purple-200');
+                        document.getElementById('role-icon').className = "ph-bold ph-crown absolute z-10";
+                        document.querySelector('[data-i18n="welcome"]').innerText = currentLang === 'th' ? "Welcome Super Admin" : "Welcome Super Admin";
+                    }
+                    
+                    if (result.profile_pic) {
+                        const imgEl = document.getElementById('admin-profile-img');
+                        if (imgEl) {
+                            imgEl.src = result.profile_pic;
+                            imgEl.classList.remove('hidden');
+                            document.getElementById('role-icon').classList.add('hidden');
+                        }
+                    }
+
+                    const tabsContainer = document.getElementById('user-tabs-container');
+                    if (tabsContainer) {
+                        tabsContainer.style.display = currentAdminRole === 'superadmin' ? 'flex' : 'none';
+                    }
+                }
+                else window.location.href = 'admin_login.html';
+            } catch (err) {
+                currentAdminRole = 'superadmin'; 
+                renderUser({ full_name: "Super Admin Oat (Preview)", username: "super_oat", role: "superadmin" });
+                
+                document.getElementById('role-icon-bg').classList.remove('from-[var(--corp-red)]', 'to-red-400', 'shadow-red-200');
+                document.getElementById('role-icon-bg').classList.add('from-purple-600', 'to-indigo-400', 'shadow-purple-200');
+                document.getElementById('role-icon').className = "ph-bold ph-crown absolute z-10";
+
+                const imgEl = document.getElementById('admin-profile-img');
+                if(imgEl) {
+                    imgEl.src = "{{ BRAND_LOGO_URL }}";
+                    imgEl.classList.remove('hidden');
+                    document.getElementById('role-icon').classList.add('hidden');
+                }
+
+                const tabsContainer = document.getElementById('user-tabs-container');
+                if(tabsContainer) tabsContainer.style.display = 'flex';
+            }
+        }
+        
+        function renderUser(data) {
+            const el = document.getElementById('admin-name');
+            if (el) el.innerText = data.full_name || data.username || "Admin";
+        }
+
+        async function loadData() {
+            try {
+                if (isPreviewMode) {
+                    globalRequests = [
+                        { id: "AS-2026-04-03-001", req_date: "2026-04-03", req_time: "10:30", requester_name: "Demo User", company: "Engineering Dept.", objective: "Test request 1", areas: ["NOC Room"], status: "Pending" },
+                        { id: "AS-2026-04-03-002", req_date: "2026-04-02", req_time: "14:15", requester_name: "Sample Employee", company: "IT Support", objective: "Install Server 2", areas: ["Data Center 1"], status: "Approved" },
+                        { id: "AS-2026-04-03-003", req_date: "2026-04-01", req_time: "09:00", requester_name: "Vendor Test", company: "Network", objective: "Maintenance 3", areas: ["Server Room"], status: "Rejected" },
+                        { id: "AS-2026-04-02-004", req_date: "2026-04-02", req_time: "11:00", requester_name: "Admin Test", company: "Admin Ops", objective: "Item 4", areas: ["Zone A"], status: "Pending" },
+                        { id: "AS-2026-04-01-005", req_date: "2026-04-01", req_time: "15:30", requester_name: "Employee 5", company: "IT", objective: "Item 5", areas: ["Zone B"], status: "Approved" },
+                        { id: "AS-2026-03-30-006", req_date: "2026-03-30", req_time: "08:15", requester_name: "User A", company: "Vendor A", objective: "Item 6", areas: ["Zone C"], status: "Approved" },
+                        { id: "AS-2026-03-29-007", req_date: "2026-03-29", req_time: "13:00", requester_name: "User B", company: "Vendor B", objective: "Item 7 (page 2)", areas: ["Zone D"], status: "Pending" }
+                    ];
+                    globalUsers = [
+                        { id: "U01", username: "demo_user", full_name: "Demo User", email: "demo@example.com", phone: "081-123-4567", status: "pending", profile_pic: "", role: "user" },
+                        { id: "U02", username: "demo_admin", full_name: "Demo Admin", email: "admin@example.com", phone: "089-999-8888", status: "active", role: "admin" }
+                    ];
+                } else {
+                    const [reqRes, userRes] = await Promise.all([
+                        fetch('/api/admin/get_all_requests'), fetch('/api/admin/get_users')
+                    ]);
+                    const rJson = await reqRes.json(); const uJson = await userRes.json();
+                    if(rJson.success) globalRequests = rJson.data;
+                    if(uJson.success) globalUsers = uJson.data;
+                }
+                updateStats(globalRequests, globalUsers.length);
+                filterRequests(); 
+                updateTabCounts(); 
+                filterUsers();     
+            } catch (e) { console.error(e); }
+        }
+
+        function updateStats(rows, totalUsers) {
+            animateValue(document.getElementById('count-total'), 0, rows.length, 1000);
+            animateValue(document.getElementById('count-pending'), 0, rows.filter(r=>r.status==='Pending').length, 1000);
+            animateValue(document.getElementById('count-approved'), 0, rows.filter(r=>r.status==='Approved').length, 1000);
+            animateValue(document.getElementById('count-rejected'), 0, rows.filter(r=>r.status==='Rejected').length, 1000);
+            animateValue(document.getElementById('count-users'), 0, totalUsers, 1000);
+        }
+
+        function switchUserTab(tab) {
+            activeUserTab = tab;
+            const btnUser = document.getElementById('tab-btn-user');
+            const btnAdmin = document.getElementById('tab-btn-admin');
+            
+            if(tab === 'user') {
+                btnUser.className = "py-3 px-4 text-sm font-bold border-b-2 border-[var(--corp-blue)] text-[var(--corp-blue)] flex items-center gap-2 transition-colors";
+                btnAdmin.className = "py-3 px-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 transition-colors";
+            } else {
+                btnAdmin.className = "py-3 px-4 text-sm font-bold border-b-2 border-[var(--corp-blue)] text-[var(--corp-blue)] flex items-center gap-2 transition-colors";
+                btnUser.className = "py-3 px-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex items-center gap-2 transition-colors";
+            }
+            filterUsers();
+        }
+
+        function updateTabCounts() {
+            const userCount = globalUsers.filter(u => u.role === 'user').length;
+            const adminCount = globalUsers.filter(u => u.role === 'admin' || u.role === 'superadmin').length;
+            
+            const tabCountUser = document.getElementById('tab-count-user');
+            const tabCountAdmin = document.getElementById('tab-count-admin');
+            
+            if(tabCountUser) tabCountUser.innerText = userCount;
+            if(tabCountAdmin) tabCountAdmin.innerText = adminCount;
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('search-user-input').value.toLowerCase();
+            const roleFiltered = globalUsers.filter(u => {
+                if (activeUserTab === 'admin') return u.role === 'admin' || u.role === 'superadmin';
+                return u.role === 'user';
+            });
+
+            document.getElementById('user-count-badge').innerText = roleFiltered.length;
+
+            const searchFiltered = roleFiltered.filter(u => {
+                const name = (u.full_name || '').toLowerCase();
+                const user = (u.username || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const phone = (u.phone || '').toLowerCase();
+                return name.includes(query) || user.includes(query) || email.includes(query) || phone.includes(query);
+            });
+            renderUserList(searchFiltered);
+        }
+
+        function renderUserList(users) {
+            const container = document.getElementById('users-list-container');
+            const dict = translations[currentLang];
+            
+            if (users.length === 0) { container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 font-bold">${dict.no_users}</div>`; return; }
+            
+            container.innerHTML = users.map(u => {
+                const initial = (u.full_name || u.username || 'U').charAt(0).toUpperCase();
+                const profileImgHtml = u.profile_pic 
+                    ? `<img src="${u.profile_pic}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="w-full h-full items-center justify-center hidden">${initial}</div>`
+                    : initial;
+                const roleBadge = u.role === 'admin' || u.role === 'superadmin'
+                    ? `<span class="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ml-1.5 border border-red-200">Admin</span>` 
+                    : `<span class="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ml-1.5 border border-blue-200">User</span>`;
+
+                let actions = '';
+                if (currentAdminRole === 'superadmin') {
+                    
+                    // 🌟 สร้างปุ่มเลื่อนระดับ (อัปเกรด <-> ลดระดับ) แสดงให้ Superadmin เห็น 🌟
+                    let roleActionBtn = '';
+                    if (u.role !== 'superadmin') {
+                        const oppositeRole = u.role === 'admin' ? 'user' : 'admin';
+                        const roleIcon = u.role === 'admin' ? 'ph-user-minus' : 'ph-user-plus';
+                        const roleTooltip = u.role === 'admin' ? 'ลดระดับเป็น User' : 'อัปเกรดเป็น Admin';
+                        roleActionBtn = `
+                            <button onclick="changeUserRole('${u.id}', '${oppositeRole}', '${u.full_name}')" class="text-slate-300 hover:text-purple-500 transition-colors p-1.5" title="${roleTooltip}">
+                                <i class="ph-bold ${roleIcon} text-lg"></i>
+                            </button>
+                        `;
+                    }
+
+                    if (u.status === 'pending') {
+                        actions = `
+                            <div class="flex gap-2 w-full mt-4 pt-4 border-t border-slate-100">
+                                <a href="admin_view_user.html?id=${u.id}" class="flex-[0.4] bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center rounded-lg transition-colors" title="ดูข้อมูลผู้ใช้"><i class="ph-bold ph-magnifying-glass text-base"></i></a>
+                                <button onclick="updateUserStatus('${u.id}', 'active')" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-[11px] py-2 rounded-lg font-bold transition-colors">อนุมัติ</button>
+                                <button onclick="updateUserStatus('${u.id}', 'rejected')" class="flex-1 bg-red-500 hover:bg-red-600 text-white text-[11px] py-2 rounded-lg font-bold transition-colors">ปฏิเสธ</button>
+                            </div>`;
+                    } else {
+                        actions = `
+                            <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border ${u.status === 'active' ? 'text-green-600 bg-green-50 border-green-100' : 'text-red-500 bg-red-50 border-red-100'} text-[9px] font-black uppercase">
+                                    <i class="ph-fill ${u.status === 'active' ? 'ph-check-circle' : 'ph-x-circle'}"></i>
+                                    ${u.status === 'active' ? dict.status_approved : dict.status_rejected}
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    ${roleActionBtn} <!-- ใส่ปุ่มเลื่อนขั้นตรงนี้ -->
+                                    <a href="admin_view_user.html?id=${u.id}" class="text-slate-300 hover:text-[var(--corp-blue)] transition-colors p-1.5" title="ดูข้อมูลผู้ใช้">
+                                        <i class="ph-bold ph-magnifying-glass text-lg"></i>
+                                    </a>
+                                    <button onclick="deleteUser('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1.5" title="${dict.btn_delete}">
+                                        <i class="ph-bold ph-trash text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>`;
+                    }
+                } else {
+                    actions = `
+                        <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border ${u.status === 'active' ? 'text-green-600 bg-green-50 border-green-100' : (u.status === 'rejected' ? 'text-red-500 bg-red-50 border-red-100' : 'text-orange-500 bg-orange-50 border-orange-100')} text-[9px] font-black uppercase">
+                                <i class="ph-fill ${u.status === 'active' ? 'ph-check-circle' : (u.status === 'rejected' ? 'ph-x-circle' : 'ph-clock')}"></i>
+                                ${u.status === 'active' ? dict.status_approved : (u.status === 'rejected' ? dict.status_rejected : dict.status_pending)}
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <a href="admin_view_user.html?id=${u.id}" class="text-slate-300 hover:text-[var(--corp-blue)] transition-colors p-1.5" title="ดูข้อมูลผู้ใช้">
+                                    <i class="ph-bold ph-magnifying-glass text-lg"></i>
+                                </a>
+                                <button onclick="deleteUser('${u.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1.5" title="${dict.btn_delete}">
+                                    <i class="ph-bold ph-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>`;
+                }
+                
+                return `
+                <div class="bg-white p-4 rounded-[20px] border border-slate-200 shadow-sm hover:shadow-lg transition-all group">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${u.role === 'admin' || u.role === 'superadmin' ? 'from-red-500 to-orange-400 shadow-red-50' : 'from-purple-500 to-indigo-600 shadow-purple-50'} text-white flex items-center justify-center font-black shrink-0 text-lg shadow-md group-hover:scale-105 transition-transform overflow-hidden">
+                            ${profileImgHtml}
+                        </div>
+                        <div class="overflow-hidden flex-1">
+                            <div class="font-extrabold text-sm text-slate-800 truncate mb-1 flex items-center" title="${u.full_name}">${u.full_name} ${roleBadge}</div>
+                            <div class="flex flex-col gap-0.5">
+                                <div class="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                                    <i class="ph-bold ph-identification-badge text-purple-400 text-sm"></i> 
+                                    <span class="text-slate-700">${u.username}</span>
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 truncate" title="${u.email || '-'}">
+                                    <i class="ph-bold ph-envelope-simple text-blue-400 text-sm"></i> 
+                                    <span class="text-slate-700">${u.email || '-'}</span>
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                                    <i class="ph-bold ph-phone text-emerald-400 text-sm"></i> 
+                                    <span class="text-slate-700">${u.phone || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${actions}
+                </div>`;
+            }).join('');
+        }
+
+        // 🌟 ฟังก์ชันจัดการเมนูตัวกรอง 🌟
+        function toggleFilterMenu() {
+            const menu = document.getElementById('filter-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-date-input').value = '';
+            document.getElementById('filter-status-input').value = '';
+            document.getElementById('search-req-input').value = '';
+            filterRequests();
+            toggleFilterMenu();
+        }
+
+        // กดที่อื่นเพื่อปิดเมนูตัวกรอง
+        document.addEventListener('click', function(event) {
+            const filterMenu = document.getElementById('filter-menu');
+            const filterToggle = document.getElementById('btn-filter-toggle');
+            if (!filterMenu.classList.contains('hidden') && !filterMenu.contains(event.target) && !filterToggle.contains(event.target)) {
+                filterMenu.classList.add('hidden');
+            }
+        });
+
+        // 🌟 ระบบ Pagination & Filters สำหรับ Requests 🌟
+        function filterRequests() {
+            const query = document.getElementById('search-req-input').value.toLowerCase();
+            const dateFilter = document.getElementById('filter-date-input') ? document.getElementById('filter-date-input').value : ''; 
+            const statusFilter = document.getElementById('filter-status-input') ? document.getElementById('filter-status-input').value : '';
+
+            reqFilteredData = globalRequests.filter(r => {
+                const id = (r.id || '').toLowerCase();
+                const name = (r.requester_name || '').toLowerCase();
+                const company = (r.company || '').toLowerCase();
+                const objective = (r.objective || '').toLowerCase();
+                const areas = (Array.isArray(r.areas) ? r.areas.join(' ') : (r.areas || '')).toLowerCase();
+                
+                const matchSearch = id.includes(query) || name.includes(query) || company.includes(query) || objective.includes(query) || areas.includes(query);
+                const matchDate = dateFilter ? r.req_date === dateFilter : true;
+                const matchStatus = statusFilter ? r.status === statusFilter : true;
+
+                return matchSearch && matchDate && matchStatus;
+            });
+            
+            reqCurrentPage = 1;
+            renderPaginatedTable();
+        }
+
+        function renderPaginatedTable() {
+            const start = (reqCurrentPage - 1) * reqItemsPerPage;
+            const end = start + reqItemsPerPage;
+            const paginatedItems = reqFilteredData.slice(start, end);
+            
+            renderTable(paginatedItems);
+            renderPaginationControls(reqFilteredData.length);
+        }
+
+        function changePage(page) {
+            reqCurrentPage = page;
+            renderPaginatedTable();
+        }
+
+        function renderPaginationControls(totalItems) {
+            const container = document.getElementById('pagination-controls');
+            const info = document.getElementById('table-info');
+            const dict = translations[currentLang];
+            
+            if (totalItems === 0) {
+                container.innerHTML = '';
+                info.innerText = currentLang === 'th' ? 'ไม่พบข้อมูล' : 'No data found';
+                return;
+            }
+
+            const totalPages = Math.ceil(totalItems / reqItemsPerPage);
+            const startIdx = ((reqCurrentPage - 1) * reqItemsPerPage) + 1;
+            const endIdx = Math.min(reqCurrentPage * reqItemsPerPage, totalItems);
+            
+            info.innerText = currentLang === 'th' 
+                ? `แสดง ${startIdx}-${endIdx} จาก ${totalItems} รายการ` 
+                : `Showing ${startIdx}-${endIdx} of ${totalItems} items`;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<button onclick="changePage(${reqCurrentPage - 1})" class="page-btn" ${reqCurrentPage === 1 ? 'disabled' : ''}><i class="ph-bold ph-caret-left"></i></button>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button onclick="changePage(${i})" class="page-btn ${reqCurrentPage === i ? 'active' : ''}">${i}</button>`;
+            }
+            
+            html += `<button onclick="changePage(${reqCurrentPage + 1})" class="page-btn" ${reqCurrentPage === totalPages ? 'disabled' : ''}><i class="ph-bold ph-caret-right"></i></button>`;
+            
+            container.innerHTML = html;
+        }
+
+        function filterByCard(status) {
+            if(document.getElementById('filter-status-input')) {
+                document.getElementById('filter-status-input').value = status;
+                document.getElementById('filter-date-input').value = '';
+                document.getElementById('search-req-input').value = '';
+                filterRequests();
+                document.getElementById('table-info').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function renderTable(rows) {
+            const tbody = document.getElementById('table-body');
+            const dict = translations[currentLang];
+            
+            if(rows.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="5" class="p-16 text-center text-slate-400 font-bold">${dict.no_data}</td></tr>`; 
+                return; 
+            }
+            
+            tbody.innerHTML = rows.map(item => {
+                let badge = `<span class="status-badge st-pending"><i class="ph-bold ph-clock"></i> ${dict.status_pending}</span>`;
+                if(item.status === 'Approved') badge = `<span class="status-badge st-approved"><i class="ph-fill ph-check-circle"></i> ${dict.status_approved}</span>`;
+                else if(item.status === 'Rejected') badge = `<span class="status-badge st-rejected"><i class="ph-fill ph-x-circle"></i> ${dict.status_rejected}</span>`;
+
+                let buttons = `
+                    <button onclick="openPreviewModal('${item.id}')" class="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-white border border-slate-200 text-slate-500 hover:text-[var(--corp-blue)] rounded-lg transition-all shadow-sm active:scale-95 group/prev" title="${dict.btn_preview}">
+                        <i class="ph-bold ph-eye text-lg group-hover/prev:scale-110"></i>
+                    </button>
+                    <a href="admin_approve.html?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-white border border-slate-200 text-slate-500 hover:text-[var(--corp-blue)] rounded-lg transition-all shadow-sm active:scale-95 group/view" title="${dict.btn_details}">
+                        <i class="ph-bold ph-magnifying-glass text-lg group-hover/view:scale-110"></i>
+                    </a>
+                `;
+
+                if (item.status === 'Approved') {
+                    buttons += `
+                        <a href="admin_download.html?id=${item.id}" class="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 rounded-lg transition-all shadow-sm active:scale-95 group/dl" title="${dict.btn_download}">
+                            <i class="ph-bold ph-download-simple text-lg group-hover/dl:scale-110"></i>
+                        </a>
+                    `;
+                }
+
+                buttons += `
+                    <button onclick="handleDeleteRequest('${item.id}')" class="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-white border border-slate-200 text-slate-400 hover:text-red-500 rounded-lg transition-all shadow-sm active:scale-95 group/del" title="${dict.btn_delete_req}">
+                        <i class="ph-bold ph-trash text-lg group-hover/del:scale-110"></i>
+                    </button>
+                `;
+
+                return `
+                <tr class="group hover:bg-slate-50 transition-colors">
+                    <td class="text-center font-mono font-bold text-[#001C54] pl-4 md:pl-6 text-xs" onclick="handleRowClick(event, '${item.id}')" style="cursor:pointer;">#${item.id}</td>
+                    <td class="text-slate-500 font-bold text-[11px]" onclick="handleRowClick(event, '${item.id}')" style="cursor:pointer;">${item.req_date}</td>
+                    <td onclick="handleRowClick(event, '${item.id}')" style="cursor:pointer;"><div class="font-bold text-slate-800 text-xs">${item.requester_name}</div><div class="text-[9px] text-slate-400 font-bold uppercase tracking-tight">${item.company}</div></td>
+                    <td class="text-center" onclick="handleRowClick(event, '${item.id}')" style="cursor:pointer;">${badge}</td>
+                    <td class="text-right pr-6"><div class="flex justify-end gap-1.5">${buttons}</div></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // 🌟 1. ดึงรูปลง Excel จากภาพที่แสดงอยู่บนหน้าเว็บ (แก้ปัญหาดึงรูปไม่ขึ้น) 🌟
+        const getBase64FromDOM = (imgElement) => {
+            if (!imgElement || !imgElement.complete || imgElement.naturalWidth === 0) return null;
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = imgElement.naturalWidth;
+                canvas.height = imgElement.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0);
+                const dataURL = canvas.toDataURL('image/png');
+                return dataURL.replace(/^data:image\/(png|jpg|jpeg);base64,/, ""); // ตัด Prefix ทิ้งให้ ExcelJS อ่านได้
+            } catch (e) {
+                console.warn("Failed to convert image for Excel:", e);
+                return null;
+            }
+        };
+
+        // 🌟 2. ฟังก์ชันดาวน์โหลด Excel ด้วย ExcelJS (ดีไซน์สวยงาม) 🌟
+        async function exportTableToExcel() {
+            if (!reqFilteredData || reqFilteredData.length === 0) {
+                alert(currentLang === 'th' ? "ไม่มีข้อมูลสำหรับดาวน์โหลด" : "No data available for download");
+                return;
+            }
+            
+            const btn = document.getElementById('btn-export-excel');
+            const origContent = btn.innerHTML;
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> <span class="hidden sm:inline">Processing...</span>`;
+            btn.disabled = true;
+
+            try {
+                const wb = new ExcelJS.Workbook();
+                const ws = wb.addWorksheet('Request List');
+
+                // กำหนดความกว้างคอลัมน์
+                ws.columns = [
+                    { key: 'id', width: 18 },          // Ref ID (A)
+                    { key: 'date', width: 14 },        // วันที่ขอ (B)
+                    { key: 'time', width: 12 },        // เวลาที่ขอ (C)
+                    { key: 'schedule', width: 28 },    // 🌟 กำหนดการเข้าพื้นที่ (D) 🌟
+                    { key: 'req_name', width: 25 },    // ผู้ขอ (E)
+                    { key: 'company', width: 25 },     // หน่วยงาน (F)
+                    { key: 'obj', width: 35 },         // รายละเอียดงาน (G)
+                    { key: 'areas', width: 45 },       // 🌟 พื้นที่ปฏิบัติงาน (H) (ขยายให้กว้างขึ้น) 🌟
+                    { key: 'status', width: 15 }       // สถานะ (I)
+                ];
+
+                // จัดการเรื่องรูปโลโก้
+                const logoImgElement = document.querySelector('nav img'); // ดูดรูปโลโก้จาก Navbar โดยตรง
+                const logoB64 = getBase64FromDOM(logoImgElement);
+                let startRow = 1;
+                
+                if (logoB64) {
+                    ws.spliceRows(1, 0, [], [], []); // แทรกแถวว่าง 3 แถว
+                    const imageId = wb.addImage({ base64: logoB64, extension: 'png' });
+                    ws.addImage(imageId, {
+                        tl: { col: 0, row: 0 },
+                        ext: { width: 165, height: 50 } // 🌟 ปรับขนาดให้สมส่วน ไม่ยืด 🌟
+                    });
+                    ws.getRow(1).height = 40; // 🌟 ขยายแถวแรกให้พอดีโลโก้ 🌟
+                    
+                    // เพิ่มชื่อตาราง (ขยับให้หลบรูปภาพ)
+                    ws.mergeCells('D2:I2');
+                    const titleCell = ws.getCell('D2');
+                    titleCell.value = currentLang === 'th' ? 'รายงานคำขอเข้าพื้นที่ปฏิบัติงาน (Access Site Request)' : 'Access Site Request Report';
+                    titleCell.font = { size: 16, bold: true, color: { argb: 'FF001C54' } };
+                    titleCell.alignment = { vertical: 'middle', horizontal: 'left' };
+                    
+                    startRow = 4;
+                }
+
+                // 🌟 อัปเดตหัวตาราง (Header Row) 🌟
+                const headers = ['Ref ID', 'วันที่ขอ', 'เวลาที่ขอ', 'กำหนดการเข้าพื้นที่', 'ผู้ขอ', 'หน่วยงาน', 'รายละเอียดงาน', 'พื้นที่ปฏิบัติงาน', 'สถานะ'];
+                const headerRow = ws.getRow(startRow);
+                headerRow.values = headers;
+                headerRow.height = 25;
+                headerRow.eachCell(cell => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF001C54' } };
+                    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = {
+                        top: {style:'thin'}, bottom: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'}
+                    };
+                });
+
+                // วนลูปใส่ข้อมูล
+                reqFilteredData.forEach((item, index) => {
+                    const row = ws.getRow(startRow + 1 + index);
+                    
+                    // 🌟 สร้างข้อความสำหรับคอลัมน์กำหนดการเข้าพื้นที่ 🌟
+                    const scheduleStr = `${item.start_date || '-'} ${item.start_time || ''} ถึง\n${item.end_date || '-'} ${item.end_time || ''}`;
+                    
+                    // 🌟 จัดหน้าข้อความสำหรับพื้นที่ปฏิบัติงาน (เปลี่ยน ', ' เป็นขึ้นบรรทัดใหม่) 🌟
+                    const areasStr = Array.isArray(item.areas) ? item.areas.join(',\n') : (item.areas || '-').replace(/, /g, ',\n');
+
+                    row.values = [
+                        item.id,
+                        item.req_date,
+                        item.req_time || '-',
+                        scheduleStr,       // กำหนดการเข้าพื้นที่
+                        item.requester_name,
+                        item.company,
+                        item.objective,
+                        areasStr,          // พื้นที่ปฏิบัติงาน (แบบขึ้นบรรทัดใหม่)
+                        item.status
+                    ];
+                    
+                    row.eachCell((cell, colNum) => {
+                        cell.border = { top: {style:'thin'}, bottom: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
+                        
+                        // 🌟 จัดหน้าข้อความ (Alignment) 🌟
+                        if (colNum === 4 || colNum === 7 || colNum === 8) { 
+                            // กำหนดการ, รายละเอียด, พื้นที่ -> ชิดซ้ายบน และ Wrap Text
+                            cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+                        } else if (colNum === 1 || colNum === 2 || colNum === 3 || colNum === 9) {
+                            // ID, Date, Time, Status -> กึ่งกลางบน
+                            cell.alignment = { vertical: 'top', horizontal: 'center', wrapText: true };
+                        } else {
+                            // ผู้ขอ, หน่วยงาน -> ชิดซ้ายบน
+                            cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+                        }
+                    });
+                    
+                    // ใส่สีสถานะ (คอลัมน์ 9)
+                    const statusCell = row.getCell(9);
+                    if(item.status === 'Approved') statusCell.font = { color: { argb: 'FF16A34A'}, bold: true };
+                    else if(item.status === 'Rejected') statusCell.font = { color: { argb: 'FFDC2626'}, bold: true };
+                    else statusCell.font = { color: { argb: 'FFEA580C'}, bold: true };
+                });
+
+                // Generate & Download
+                const buffer = await wb.xlsx.writeBuffer();
+                const d = new Date();
+                const fileName = `Demo_Requests_Report_${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}.xlsx`;
+                saveAs(new Blob([buffer]), fileName);
+
+            } catch (err) {
+                console.error("Excel Export Error:", err);
+                alert("Error exporting Excel");
+            } finally {
+                btn.innerHTML = origContent;
+                btn.disabled = false;
+            }
+        }
+
+        // 🌟 โชว์ Modal รายการเอกสารเมื่อกดที่ Card ด้านบน 🌟
+        function openStatusListModal(status) {
+            const modal = document.getElementById('status-list-modal');
+            const title = document.getElementById('status-modal-title');
+            const content = document.getElementById('status-list-content');
+            
+            let icon = '';
+            let statusName = '';
+            
+            if (status === 'Pending') { 
+                icon = '<i class="ph-fill ph-clock-countdown text-orange-500"></i>'; 
+                statusName = currentLang === 'th' ? 'รออนุมัติ' : 'Pending'; 
+            }
+            if (status === 'Approved') { 
+                icon = '<i class="ph-fill ph-check-circle text-green-500"></i>'; 
+                statusName = currentLang === 'th' ? 'อนุมัติแล้ว' : 'Approved'; 
+            }
+            if (status === 'Rejected') { 
+                icon = '<i class="ph-fill ph-x-circle text-red-500"></i>'; 
+                statusName = currentLang === 'th' ? 'ไม่อนุมัติ' : 'Rejected'; 
+            }
+
+            title.innerHTML = `${icon} <span class="text-base">${currentLang === 'th' ? 'รายการเอกสาร:' : 'Documents:'} ${statusName}</span>`;
+
+            const items = globalRequests.filter(r => r.status === status);
+            if (items.length === 0) {
+                content.innerHTML = `<div class="text-center py-8 text-slate-400 font-bold">${currentLang === 'th' ? 'ไม่มีรายการ' : 'No items found'}</div>`;
+            } else {
+                content.innerHTML = items.map(item => `
+                    <div class="p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors flex justify-between items-center group cursor-pointer mb-2" onclick="closeStatusListModal(); openPreviewModal('${item.id}')">
+                        <div>
+                            <div class="font-mono font-bold text-[var(--corp-blue)] text-sm">#${item.id}</div>
+                            <div class="text-xs text-slate-500 font-medium truncate max-w-[200px] md:max-w-[300px]">${item.requester_name} - ${item.objective}</div>
+                        </div>
+                        <i class="ph-bold ph-caret-right text-slate-300 group-hover:text-[var(--corp-blue)] transition-colors"></i>
+                    </div>
+                `).join('');
+            }
+
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { 
+                document.getElementById('status-list-backdrop').classList.add('opacity-100'); 
+                document.getElementById('status-list-card').classList.add('scale-100', 'opacity-100'); 
+            }, 10);
+        }
+
+        function closeStatusListModal() {
+            document.getElementById('status-list-backdrop').classList.remove('opacity-100');
+            document.getElementById('status-list-card').classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => document.getElementById('status-list-modal').classList.add('hidden'), 300);
+        }
+
+        async function openPreviewModal(id) {
+            const m = document.getElementById('preview-modal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { 
+                document.getElementById('preview-backdrop').classList.add('opacity-100'); 
+                document.getElementById('preview-card').classList.add('scale-100', 'opacity-100'); 
+            }, 10);
+
+            document.getElementById('pv-id').innerText = `#${id}`;
+            document.getElementById('pv-date').innerText = `Loading...`;
+            document.getElementById('pv-name').innerText = `Loading...`;
+            document.getElementById('pv-company').innerText = `-`;
+            document.getElementById('pv-mobile').innerText = `-`;
+            document.getElementById('pv-objective').innerHTML = `<i class="ph-duotone ph-spinner animate-spin"></i> กำลังดึงข้อมูล...`;
+            document.getElementById('pv-detail').innerText = `-`;
+            document.getElementById('pv-areas').innerText = `-`;
+            document.getElementById('pv-start').innerText = `-`;
+            document.getElementById('pv-end').innerText = `-`;
+            document.getElementById('pv-status').innerHTML = `-`;
+            document.getElementById('pv-link').href = `#`;
+
+            try {
+                if (isPreviewMode) {
+                    const item = globalRequests.find(r => String(r.id) === String(id));
+                    if(item) populatePreviewData(item);
+                    return;
+                }
+
+                const response = await fetch(`/get_data?id=${id}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    populatePreviewData(result.data);
+                } else {
+                    document.getElementById('pv-objective').innerText = "ไม่พบข้อมูล หรือเซิร์ฟเวอร์ขัดข้อง";
+                }
+            } catch (error) {
+                console.error("Error loading preview:", error);
+                document.getElementById('pv-objective').innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+            }
+        }
+
+        function populatePreviewData(item) {
+            document.getElementById('pv-date').innerText = `${item.req_date || '-'} ${item.req_time || ''}`;
+            document.getElementById('pv-name').innerText = item.requester_name || '-';
+            document.getElementById('pv-company').innerText = item.company || '-';
+            document.getElementById('pv-mobile').innerText = item.mobile || '-';
+            document.getElementById('pv-objective').innerText = item.objective || '-';
+            document.getElementById('pv-detail').innerText = item.detail_work || '-';
+            
+            const areas = Array.isArray(item.areas) ? item.areas.join(', ') : (item.areas || '-');
+            document.getElementById('pv-areas').innerText = areas;
+            
+            document.getElementById('pv-start').innerText = `${item.start_date || '-'} ${item.start_time || ''}`;
+            document.getElementById('pv-end').innerText = `${item.end_date || '-'} ${item.end_time || ''}`;
+            
+            const dict = translations[currentLang];
+            let badge = `<span class="status-badge st-pending"><i class="ph-bold ph-clock"></i> ${dict.status_pending}</span>`;
+            if(item.status === 'Approved') badge = `<span class="status-badge st-approved"><i class="ph-fill ph-check-circle"></i> ${dict.status_approved}</span>`;
+            else if(item.status === 'Rejected') badge = `<span class="status-badge st-rejected"><i class="ph-fill ph-x-circle"></i> ${dict.status_rejected}</span>`;
+            document.getElementById('pv-status').innerHTML = badge;
+            
+            document.getElementById('pv-link').href = `admin_approve.html?id=${item.id}`;
+        }
+
+        function closePreviewModal() {
+            document.getElementById('preview-backdrop').classList.remove('opacity-100');
+            document.getElementById('preview-card').classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => document.getElementById('preview-modal').classList.add('hidden'), 300);
+        }
+
+        async function updateUserStatus(userId, status) {
+            try {
+                if (isPreviewMode) {
+                    const user = globalUsers.find(u => u.id === userId);
+                    if(user) user.status = status;
+                    updateTabCounts();
+                    filterUsers();
+                    return; 
+                }
+                const response = await fetch('/api/admin/update_user_status', { 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ user_id: userId, status: status }) 
+                });
+                const res = await response.json();
+                if(res.success) {
+                    const user = globalUsers.find(u=>u.id === userId);
+                    if(user && user.email) {
+                        const formData = new FormData();
+                        formData.append('action', 'notify_user');
+                        formData.append('email', user.email);
+                        formData.append('full_name', user.full_name);
+                        formData.append('status', status);
+                        fetch(GAS_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+                    }
+                    loadData();
+                } else {
+                    alert(res.message);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteUser(userId) {
+            const isTh = currentLang === 'th';
+            openConfirmModal({
+                title: isTh ? "ลบผู้ใช้งาน?" : "Delete User?",
+                desc: isTh ? "บัญชีผู้ใช้นี้จะถูกลบออกจากระบบอย่างถาวร" : "This account will be permanently deleted.",
+                icon: "ph-bold ph-user-minus", innerClass: "bg-red-500", btnClass: "bg-red-500 hover:bg-red-600", confirmText: isTh ? "ลบทันที" : "Delete"
+            }, async () => {
+                if (isPreviewMode) {
+                    globalUsers = globalUsers.filter(u => u.id !== userId);
+                    updateTabCounts();
+                    filterUsers();
+                    updateStats(globalRequests, globalUsers.length);
+                    return;
+                }
+                const response = await fetch('/api/admin/delete_user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ user_id: userId }) });
+                const res = await response.json();
+                if(res.success) loadData();
+                else alert(res.message);
+            });
+        }
+
+        function handleDeleteRequest(id) {
+            const isTh = currentLang === 'th';
+            openConfirmModal({
+                title: isTh ? "ลบรายการคำขอ?" : "Delete Request?",
+                desc: isTh ? "รายการคำขอนี้จะถูกลบออกจากฐานข้อมูลอย่างถาวร" : "This request will be permanently deleted.",
+                icon: "ph-bold ph-trash", innerClass: "bg-red-500", btnClass: "bg-red-500 hover:bg-red-600", confirmText: isTh ? "ลบทันที" : "Delete"
+            }, async () => {
+                if (isPreviewMode) {
+                    globalRequests = globalRequests.filter(r => r.id !== id);
+                    filterRequests();
+                    updateStats(globalRequests, globalUsers.length);
+                    return;
+                }
+                const response = await fetch('/api/admin/delete_request', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ req_id: id }) });
+                if((await response.json()).success) loadData();
+            });
+        }
+
+        function handleRowClick(event, id) {
+            if (event.target.closest('button') || event.target.closest('a')) return;
+            openPreviewModal(id);
+        }
+
+        function animateValue(obj, start, end, duration) {
+            if(!obj) return; let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step); else obj.innerHTML = end;
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function openConfirmModal(config, callback) {
+            const m = document.getElementById('custom-confirm-modal');
+            document.getElementById('confirm-title').innerText = config.title;
+            document.getElementById('confirm-desc').innerText = config.desc;
+            document.getElementById('confirm-inner-circle').className = `w-16 h-16 rounded-full flex items-center justify-center text-white mx-auto mb-4 shadow-lg ${config.innerClass}`;
+            document.getElementById('confirm-icon').className = config.icon;
+            document.getElementById('confirm-action-btn').className = `flex-1 text-white font-bold py-3 rounded-xl shadow-lg ${config.btnClass}`;
+            document.getElementById('confirm-action-btn').innerText = config.confirmText;
+            document.getElementById('confirm-action-btn').onclick = () => { callback(); closeConfirmModal(); };
+            m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { document.getElementById('confirm-backdrop').classList.add('opacity-100'); document.getElementById('confirm-card').classList.add('scale-100', 'opacity-100'); }, 10);
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-backdrop').classList.remove('opacity-100');
+            document.getElementById('confirm-card').classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => document.getElementById('custom-confirm-modal').classList.add('hidden'), 300);
+        }
+
+        function logout() { 
+            if (isPreviewMode) window.location.reload();
+            else window.location.href = '/api/admin/logout'; 
+        }
+
+        // 🌟 ฟังก์ชันเปลี่ยนสิทธิ์ผู้ใช้งาน (เฉพาะ Super Admin) 🌟
+        function changeUserRole(userId, newRole, name) {
+            const isTh = currentLang === 'th';
+            const roleName = newRole === 'admin' ? 'Admin' : 'User';
+            openConfirmModal({
+                title: isTh ? "เปลี่ยนระดับสิทธิ์?" : "Change Role?",
+                desc: isTh ? `คุณต้องการเปลี่ยนสิทธิ์ของ ${name} เป็น ${roleName} ใช่หรือไม่?` : `Change ${name}'s role to ${roleName}?`,
+                icon: "ph-bold ph-user-switch", 
+                innerClass: "bg-purple-500", 
+                btnClass: "bg-purple-500 hover:bg-purple-600", 
+                confirmText: isTh ? "ยืนยันการเปลี่ยนสิทธิ์" : "Confirm"
+            }, async () => {
+                if (isPreviewMode) {
+                    const u = globalUsers.find(x => x.id === userId);
+                    if(u) u.role = newRole;
+                    updateTabCounts();
+                    filterUsers();
+                    return;
+                }
+                try {
+                    const response = await fetch('/api/admin/change_role', { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify({ user_id: userId, role: newRole }) 
+                    });
+                    const res = await response.json();
+                    if(res.success) loadData();
+                    else alert(res.message);
+                } catch(e) {
+                    console.error(e);
+                    alert("Error changing role");
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { 
+            setLanguage(currentLang); 
+            loadUserProfile(); 
+            loadData(); 
+        });
+    </script> 
+</body>
+</html>

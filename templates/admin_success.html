@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Action Successful - Admin Portal</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        /* --- CSS VARIABLES Configuration --- */
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            
+            --bg-body:          #f4f6f9;
+            --text-main:        #334155;
+            --text-muted:       #64748b;
+            --border-line:      #e2e8f0;
+            
+            /* Status Colors */
+            --success-green:    #16a34a;
+            --reject-red:       #dc2626;
+            
+            /* Dynamic Stamp Color (เปลี่ยนด้วย JS) */
+            --stamp-color:      #16a34a; 
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Background Animation --- */
+        .bg-container { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+        .floating-icon { position: absolute; color: var(--corp-blue); opacity: 0.03; animation: float 10s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        
+        .icon-1 { top: 5%; left: 5%; font-size: 100px; transform: rotate(15deg); animation-duration: 12s; }
+        .icon-2 { bottom: 5%; right: 5%; font-size: 80px; animation-duration: 15s; animation-delay: 1s; }
+
+        /* --- Card Style --- */
+        .success-card {
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(12px);
+            border: 1px solid white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px -15px rgba(0, 28, 84, 0.12);
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- Document Typing Animation --- */
+        .doc-anim-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .doc-icon {
+            width: 65px; 
+            height: 85px;
+            background: white;
+            border: 3px solid var(--corp-blue);
+            border-radius: 8px;
+            padding: 10px 6px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px;
+            box-shadow: 0 10px 25px rgba(0, 28, 84, 0.1);
+            position: relative;
+        }
+
+        .doc-header-line {
+            height: 6px; background: var(--corp-blue-light); border-radius: 4px;
+            width: 0; animation: typeLine 0.4s 0.2s forwards ease-out;
+            --target-width: 50%;
+        }
+
+        .doc-line {
+            height: 4px; background: #cbd5e1; border-radius: 2px;
+            width: 0;
+        }
+        
+        /* Sequence of typing */
+        .doc-line-1 { animation: typeLine 0.4s 0.6s forwards ease-out; --target-width: 90%; }
+        .doc-line-2 { animation: typeLine 0.4s 1.0s forwards ease-out; --target-width: 75%; }
+        .doc-line-3 { animation: typeLine 0.4s 1.4s forwards ease-out; --target-width: 85%; }
+        .doc-line-4 { animation: typeLine 0.4s 1.8s forwards ease-out; --target-width: 40%; }
+
+        @keyframes typeLine {
+            from { width: 0; }
+            to { width: var(--target-width); }
+        }
+
+        /* Stamp Animation */
+        .doc-stamp {
+            position: absolute; right: -15px; bottom: -10px;
+            font-size: 48px; 
+            color: var(--stamp-color); /* ใช้ CSS Variable เปลี่ยนสีตามสถานะ */
+            opacity: 0; 
+            transform: scale(3) rotate(-30deg);
+            /* Pops in after typing is done (2.2s) */
+            animation: stampIn 0.5s 2.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white; border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes stampIn {
+            to { opacity: 1; transform: scale(1) rotate(-10deg); }
+        }
+
+        /* --- Text Transitions --- */
+        .status-text {
+            transition: color 0.3s ease;
+            color: var(--corp-blue);
+        }
+        
+        /* Detail Text Transition */
+        #status-desc {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            height: 2.5rem; /* จองพื้นที่ไว้กัน Layout ขยับ */
+        }
+
+        /* --- Countdown Progress Bar --- */
+        .progress-container {
+            width: 100%; height: 6px; 
+            background: var(--border-line); 
+            border-radius: 3px; 
+            overflow: hidden; 
+            margin: 1.25rem 0 1rem 0;
+        }
+        .progress-bar {
+            height: 100%; 
+            background: var(--corp-blue-light); 
+            width: 100%;
+            transform-origin: left;
+            animation: shrinkBar 5s linear forwards;
+        }
+        @keyframes shrinkBar {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        .countdown-number {
+            font-size: 1.15rem; 
+            font-weight: 700;
+            color: var(--corp-blue);
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        /* Button */
+        .btn-skip {
+            background-color: white; border: 1px solid var(--border-line); color: var(--text-muted);
+            padding: 0.6rem 1.25rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700;
+            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+        }
+        .btn-skip:hover { border-color: var(--corp-blue); color: var(--corp-blue); background-color: #f8fafc; }
+
+        /* Language Button */
+        .lang-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 50px;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 50;
+        }
+        .lang-btn:hover {
+            background: #fff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* --- Media Queries สำหรับ Tablet / Desktop --- */
+        @media (min-width: 640px) {
+            .success-card { padding: 3rem 2.5rem; }
+            .icon-1 { top: 10%; left: 10%; font-size: 150px; }
+            .icon-2 { bottom: 10%; right: 10%; font-size: 120px; }
+            .lang-btn { top: 1.5rem; right: 1.5rem; padding: 0.5rem 1rem; }
+            
+            .doc-anim-container { margin-bottom: 2rem; }
+            .doc-icon { width: 70px; height: 90px; padding: 12px 8px; gap: 8px; }
+            .doc-header-line { height: 8px; }
+            .doc-stamp { right: -20px; bottom: -15px; font-size: 54px; }
+            
+            .countdown-number { font-size: 1.25rem; }
+            .btn-skip { padding: 0.6rem 1.5rem; }
+            #status-desc { height: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Decor -->
+    <div class="bg-container">
+        <i class="ph-duotone ph-shield-check floating-icon icon-1"></i>
+        <i class="ph-duotone ph-checks floating-icon icon-2"></i>
+    </div>
+
+    <!-- Language Switcher -->
+    <button class="lang-btn" onclick="toggleLanguage()">
+        <img id="lang-flag" src="https://flagcdn.com/w20/th.png" alt="TH" class="w-5 rounded-[2px] shadow-sm">
+        <span id="lang-text" class="text-slate-600 font-bold text-sm tracking-wide">TH</span>
+    </button>
+
+    <div class="success-card">
+        
+        <!-- Document Typing Animation -->
+        <div class="doc-anim-container">
+            <div class="doc-icon">
+                <div class="doc-header-line"></div>
+                <div class="doc-line doc-line-1"></div>
+                <div class="doc-line doc-line-2"></div>
+                <div class="doc-line doc-line-3"></div>
+                <div class="doc-line doc-line-4"></div>
+                <!-- Checkmark / X Stamp (ถูกเปลี่ยน Class ตามสถานะด้วย JS) -->
+                <i class="ph-fill ph-check-circle doc-stamp" id="doc-stamp-icon"></i>
+            </div>
+        </div>
+
+        <!-- Texts -->
+        <h1 id="status-title" class="text-xl sm:text-2xl font-bold mb-2 status-text" data-i18n="status_saving">กำลังบันทึกสถานะ...</h1>
+        
+        <p class="text-xs sm:text-sm text-slate-500 mb-6 flex flex-col items-center justify-center" id="status-desc">
+            <span id="desc-part-1">ระบบได้บันทึกสถานะสำหรับคำขอ</span>
+            <span class="font-bold text-slate-700 block mt-1">Ref ID: <span id="display-id">...</span></span>
+        </p>
+
+        <!-- Countdown Section -->
+        <div class="mt-6 sm:mt-8">
+            <div class="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-medium" style="color: var(--text-muted);">
+                <span data-i18n="redirect_text">กลับหน้า Dashboard ใน</span>
+                <span id="countdown-number" class="countdown-number">5</span>
+                <span data-i18n="seconds">วินาที</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Manual Redirect Button -->
+        <button onclick="skipWait()" class="btn-skip mt-2 transform active:scale-95">
+            <i class="ph-bold ph-squares-four text-lg"></i> <span data-i18n="btn_skip">กลับหน้า Dashboard ทันที</span>
+        </button>
+    </div>
+
+    <script>
+        const isPreviewMode = window.location.hostname.includes('usercontent.goog') || 
+                              ['blob:', 'about:', 'file:'].includes(window.location.protocol);
+
+        let timer;
+        let timeLeft = 5;
+        let docStatus = 'Approved'; // Default
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+
+        // Translations Database
+        const translations = {
+            th: {
+                status_saving: "กำลังบันทึกสถานะ...",
+                title_approve: "อนุมัติคำขอสำเร็จ",
+                title_reject: "ปฏิเสธคำขอสำเร็จ",
+                desc_part1: "ระบบได้บันทึกสถานะสำหรับคำขอ",
+                redirect_text: "กลับหน้า Dashboard ใน",
+                seconds: "วินาที",
+                btn_skip: "กลับหน้า Dashboard ทันที",
+                not_found: "ไม่พบรหัส"
+            },
+            en: {
+                status_saving: "Saving Status...",
+                title_approve: "Request Approved",
+                title_reject: "Request Rejected",
+                desc_part1: "The status for request has been recorded.",
+                redirect_text: "Returning to Dashboard in",
+                seconds: "seconds",
+                btn_skip: "Back to Dashboard Now",
+                not_found: "Unknown ID"
+            }
+        };
+
+        window.onload = function() {
+            // ดึงค่า ID และ Status จาก URL (เช่น admin_success.html?id=105&status=Approved)
+            const urlParams = new URLSearchParams(window.location.search);
+            const docId = urlParams.get('id');
+            const urlStatus = urlParams.get('status'); 
+            
+            if (urlStatus === 'Rejected') {
+                docStatus = 'Rejected';
+            }
+
+            // แสดงรหัสเอกสาร
+            const displayIdEl = document.getElementById('display-id');
+            if (docId) {
+                displayIdEl.innerText = '#' + docId;
+            } else {
+                displayIdEl.innerText = translations[currentLang].not_found;
+            }
+
+            // เตรียมตั้งค่าสีและไอคอนของตรายาง
+            const stampIcon = document.getElementById('doc-stamp-icon');
+            if (docStatus === 'Rejected') {
+                document.documentElement.style.setProperty('--stamp-color', 'var(--reject-red)');
+                stampIcon.classList.replace('ph-check-circle', 'ph-x-circle');
+            } else {
+                document.documentElement.style.setProperty('--stamp-color', 'var(--success-green)');
+                stampIcon.classList.replace('ph-x-circle', 'ph-check-circle');
+            }
+
+            // เริ่มทำงานระบบภาษาเบื้องต้น (แสดงข้อความ "กำลังบันทึกสถานะ...")
+            applyLanguage(false);
+
+            // Trigger Animation เปลี่ยนข้อความหลังจาก 2.2 วินาที (เวลาที่ตรายางปั๊มเสร็จพอดี)
+            setTimeout(() => {
+                const titleEl = document.getElementById('status-title');
+                titleEl.style.color = 'var(--stamp-color)';
+                
+                // เปลี่ยน Key ภาษาเพื่อให้แปลคำใหม่
+                titleEl.setAttribute('data-i18n', docStatus === 'Approved' ? 'title_approve' : 'title_reject');
+                
+                // โชว์รายละเอียดด้านล่าง
+                document.getElementById('status-desc').style.opacity = '1';
+                
+                // รีเฟรชภาษาอีกครั้งให้คำที่เปลี่ยนใหม่แสดงผล
+                applyLanguage(true);
+            }, 2200);
+
+            // เริ่มนับถอยหลัง
+            startCountdown();
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            // หากตรายางปั๊มเสร็จแล้ว (เวลาผ่านไป > 2.2s) ให้แปลแบบจบแล้ว
+            const isAnimationDone = timeLeft <= 3; // เดาจากเวลา 5 วิ
+            applyLanguage(isAnimationDone);
+        }
+
+        function applyLanguage(isAnimationDone) {
+            localStorage.setItem('site_lang', currentLang);
+            const dict = translations[currentLang];
+            
+            // อัปเดตปุ่มธงชาติ
+            const flagImg = document.getElementById('lang-flag');
+            const langText = document.getElementById('lang-text');
+            if (currentLang === 'th') {
+                flagImg.src = "https://flagcdn.com/w20/th.png";
+                langText.innerText = "TH";
+            } else {
+                flagImg.src = "https://flagcdn.com/w20/gb.png";
+                langText.innerText = "EN";
+            }
+
+            // อัปเดตข้อความต่างๆ
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerText = dict[key];
+                }
+            });
+
+            // อัปเดตส่วนเฉพาะเจาะจง
+            document.getElementById('desc-part-1').innerText = dict.desc_part1;
+            
+            const displayIdEl = document.getElementById('display-id');
+            if (displayIdEl.innerText === translations['th'].not_found || displayIdEl.innerText === translations['en'].not_found) {
+                displayIdEl.innerText = dict.not_found;
+            }
+        }
+
+        function startCountdown() {
+            const numDisplay = document.getElementById('countdown-number');
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                numDisplay.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    goToDashboard();
+                }
+            }, 1000);
+        }
+
+        function goToDashboard() {
+            const targetUrl = 'admin_dashboard.html'; 
+            
+            try {
+                // ป้องกัน Error การ Redirect เมื่อรันในหน้า Preview
+                if (isPreviewMode) {
+                    console.log("[Preview Mode] Skipping redirect to: " + targetUrl);
+                    window.location.reload();
+                    return;
+                }
+                window.location.href = targetUrl;
+            } catch (err) {
+                console.error("Redirect Error:", err);
+            }
+        }
+
+        function skipWait() {
+            clearInterval(timer);
+            goToDashboard();
+        }
+    </script>
+</body>
+</html>

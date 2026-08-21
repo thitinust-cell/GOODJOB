@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>System Monitor — Demo Company Access Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ผูกกับ theme เดิมของระบบ (--corp-blue ฯลฯ) ถ้ามีไฟล์ CSS หลักโหลดอยู่แล้วค่าพวกนี้จะถูก override ให้ตรงกับของจริง */
+    --corp-blue:      #1e3a5f;
+    --corp-blue-light:#2d5580;
+    --border-line:    #2a3f5a;
+    --text-muted:     #7d92ad;
+    --bg-deep:        #0d1b2e;
+    --bg-panel:       #12233b;
+    --bg-panel-raised:#162944;
+    --ok:             #3ecf8e;
+    --pending:        #f5a623;
+    --err:            #e5484d;
+    --mobile-accent:  #7aa2f7;
+    --web-accent:     #3ecf8e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg-deep); color:#e8eef7;
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; border-bottom:1px solid var(--border-line);
+    background:linear-gradient(180deg,var(--corp-blue) 0%, var(--bg-deep) 220%);
+  }
+  .topbar h1{font-size:16px; font-weight:700; margin:0; letter-spacing:.02em;}
+  .topbar .sub{font-size:11px; color:var(--text-muted); margin-top:2px;}
+  .conn-status{display:flex; align-items:center; gap:8px; font-size:12px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--text-muted);}
+  .dot.live{background:var(--ok); box-shadow:0 0 0 0 rgba(62,207,142,.6); animation:pulse 1.6s infinite;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(62,207,142,.55);}
+    70%{box-shadow:0 0 0 8px rgba(62,207,142,0);}
+    100%{box-shadow:0 0 0 0 rgba(62,207,142,0);}
+  }
+
+  /* ---------- layout ---------- */
+  .wrap{padding:20px 28px 32px; max-width:1600px; margin:0 auto;}
+  .stat-row{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:18px;}
+  .stat-card{
+    background:var(--bg-panel); border:1px solid var(--border-line); border-radius:10px;
+    padding:14px 16px;
+  }
+  .stat-card .label{font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em;}
+  .stat-card .value{font-size:26px; font-weight:700; margin-top:4px;}
+  .stat-card .value.ok{color:var(--ok);}
+  .stat-card .value.err{color:var(--err);}
+
+  .grid-main{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; margin-bottom:16px;}
+  .panel{
+    background:var(--bg-panel); border:1px solid var(--border-line); border-radius:10px;
+    padding:16px 18px;
+  }
+  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin:0 0 12px;}
+  canvas{max-height:220px;}
+
+  .grid-secondary{display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:16px;}
+
+  /* ---------- live feed (signature element) ---------- */
+  .feed{max-height:340px; overflow-y:auto;}
+  .feed-row{
+    display:grid; grid-template-columns:70px 46px 1fr 50px 64px 60px;
+    gap:10px; align-items:center; padding:6px 4px; font-size:12px;
+    border-bottom:1px solid var(--border-line);
+    animation:slideIn .25s ease-out;
+  }
+  @keyframes slideIn{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);}}
+  .feed-row .t{color:var(--text-muted);}
+  .method{font-weight:700; font-size:10px; padding:2px 6px; border-radius:4px; text-align:center;}
+  .method.GET{background:#1c3a52; color:#7aa2f7;}
+  .method.POST{background:#1c3d2e; color:var(--ok);}
+  .method.PUT,.method.PATCH{background:#3d3216; color:var(--pending);}
+  .method.DELETE{background:#3d1c1f; color:var(--err);}
+  .path{color:#c9d6e8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .status{font-weight:700; text-align:right;}
+  .status.s2{color:var(--ok);}
+  .status.s3{color:var(--pending);}
+  .status.s4,.status.s5{color:var(--err);}
+  .rt{color:var(--text-muted); text-align:right;}
+  .client-tag{font-size:10px; text-align:right; text-transform:uppercase; letter-spacing:.04em;}
+  .client-tag.mobile{color:var(--mobile-accent);}
+  .client-tag.web{color:var(--web-accent);}
+  .client-tag.other{color:var(--text-muted);}
+
+  .empty-state{color:var(--text-muted); font-size:12px; text-align:center; padding:40px 0;}
+
+  /* scrollbar */
+  .feed::-webkit-scrollbar{width:6px;}
+  .feed::-webkit-scrollbar-thumb{background:var(--corp-blue-light); border-radius:3px;}
+
+  /* ---------- mail-style toast notification ---------- */
+  #toastContainer{
+    position:fixed; top:76px; right:24px; z-index:1000;
+    display:flex; flex-direction:column; gap:10px;
+    width:320px; pointer-events:none;
+  }
+  .toast{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--bg-panel-raised); border:1px solid var(--border-line);
+    border-left:3px solid var(--ok);
+    border-radius:10px; padding:12px 14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    animation: toastIn .35s cubic-bezier(.2,.9,.3,1.3) forwards;
+    pointer-events:auto;
+  }
+  .toast.leaving{ animation: toastOut .3s ease-in forwards; }
+  .toast.err{ border-left-color: var(--err); }
+  .toast.pending{ border-left-color: var(--pending); }
+  @keyframes toastIn{
+    from{ opacity:0; transform:translateX(24px) translateY(-6px); }
+    to{ opacity:1; transform:translateX(0) translateY(0); }
+  }
+  @keyframes toastOut{
+    from{ opacity:1; transform:translateX(0); }
+    to{ opacity:0; transform:translateX(24px); }
+  }
+  .toast .envelope{
+    flex-shrink:0; width:30px; height:30px; border-radius:7px;
+    background:rgba(62,207,142,.12); display:flex; align-items:center; justify-content:center;
+    color:var(--ok);
+  }
+  .toast.err .envelope{ background:rgba(229,72,77,.12); color:var(--err); }
+  .toast.pending .envelope{ background:rgba(245,166,35,.12); color:var(--pending); }
+  .toast .body{ flex:1; min-width:0; }
+  .toast .title{ font-size:12.5px; font-weight:600; color:#e8eef7; }
+  .toast .meta{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .toast .meta .mono{ color:#c9d6e8; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>System Monitor</h1>
+    <div class="sub mono">Demo Company Access Portal — Live API Activity</div>
+  </div>
+  <div class="conn-status">
+    <span class="dot" id="connDot"></span>
+    <span id="connLabel" class="mono">Connecting…</span>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+
+<div class="wrap">
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="label">Requests (session)</div>
+      <div class="value mono" id="statTotal">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Requests / min</div>
+      <div class="value mono" id="statRpm">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Response</div>
+      <div class="value mono" id="statAvgRt">0 ms</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Error Rate</div>
+      <div class="value mono err" id="statErrRate">0%</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Web / Mobile</div>
+      <div class="value mono" id="statSplit">0 / 0</div>
+    </div>
+  </div>
+
+  <div class="grid-main">
+    <div class="panel">
+      <h2>Requests over time</h2>
+      <canvas id="chartTimeline"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Status code distribution</h2>
+      <canvas id="chartStatus"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-secondary">
+    <div class="panel">
+      <h2>Top endpoints</h2>
+      <canvas id="chartEndpoints"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Web vs Mobile</h2>
+      <canvas id="chartClient"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Live feed</h2>
+      <div class="feed" id="feed">
+        <div class="empty-state">รอ request เข้ามา…</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// state
+// ============================================================
+const MAX_FEED_ROWS = 60;
+const MAX_TIMELINE_POINTS = 30; // 30 ช่วงเวลา (bucket ละ 2 วิ = 1 นาที)
+const BUCKET_MS = 2000;
+
+let totalRequests = 0;
+let errorCount = 0;
+let responseTimeSum = 0;
+let webCount = 0, mobileCount = 0, otherCount = 0;
+const statusCounts = { '2xx':0, '3xx':0, '4xx':0, '5xx':0 };
+const endpointCounts = {};
+let currentBucket = { count:0, bucketStart: Date.now() };
+const timelineBuckets = []; // {t, count}
+const seenSeqs = new Set(); // กัน event ซ้ำระหว่าง websocket push กับ polling fallback
+
+// ============================================================
+// charts
+// ============================================================
+const timelineChart = new Chart(document.getElementById('chartTimeline'), {
+  type: 'line',
+  data: { labels: [], datasets: [{
+    label: 'requests', data: [],
+    borderColor: '#3ecf8e', backgroundColor: 'rgba(62,207,142,0.12)',
+    tension: 0.35, fill: true, pointRadius: 0, borderWidth: 2,
+  }]},
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    animation:{duration:250},
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ ticks:{color:'#7d92ad', maxTicksLimit:8, font:{size:10}}, grid:{color:'#1c3350'} },
+      y:{ beginAtZero:true, ticks:{color:'#7d92ad', font:{size:10}}, grid:{color:'#1c3350'} }
+    }
+  }
+});
+
+const statusChart = new Chart(document.getElementById('chartStatus'), {
+  type: 'doughnut',
+  data: { labels:['2xx','3xx','4xx','5xx'], datasets:[{
+    data:[0,0,0,0],
+    backgroundColor:['#3ecf8e','#f5a623','#e5484d','#a13d43'],
+    borderColor:'#12233b', borderWidth:2,
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'bottom', labels:{color:'#c9d6e8', font:{size:11}, boxWidth:10}} }
+  }
+});
+
+const endpointsChart = new Chart(document.getElementById('chartEndpoints'), {
+  type:'bar',
+  data:{ labels:[], datasets:[{ data:[], backgroundColor:'#2d5580', borderRadius:4 }]},
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ beginAtZero:true, ticks:{color:'#7d92ad', font:{size:10}}, grid:{color:'#1c3350'} },
+      y:{ ticks:{color:'#c9d6e8', font:{size:10}}, grid:{display:false} }
+    }
+  }
+});
+
+const clientChart = new Chart(document.getElementById('chartClient'), {
+  type:'doughnut',
+  data:{ labels:['Web','Mobile','Other'], datasets:[{
+    data:[0,0,0], backgroundColor:['#3ecf8e','#7aa2f7','#7d92ad'], borderColor:'#12233b', borderWidth:2,
+  }]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'bottom', labels:{color:'#c9d6e8', font:{size:11}, boxWidth:10}} }
+  }
+});
+
+// ============================================================
+// helpers
+// ============================================================
+function statusBucket(code){
+  if(code>=200 && code<300) return '2xx';
+  if(code>=300 && code<400) return '3xx';
+  if(code>=400 && code<500) return '4xx';
+  return '5xx';
+}
+
+function pushFeedRow(ev){
+  const feed = document.getElementById('feed');
+  const empty = feed.querySelector('.empty-state');
+  if(empty) empty.remove();
+
+  const row = document.createElement('div');
+  row.className = 'feed-row';
+  const sBucket = statusBucket(ev.status_code);
+  const sClass = sBucket === '2xx' ? 's2' : sBucket === '3xx' ? 's3' : 's4';
+  row.innerHTML = `
+    <span class="t mono">${ev.timestamp}</span>
+    <span class="method ${ev.method}">${ev.method}</span>
+    <span class="path mono" title="${ev.path}">${ev.path}</span>
+    <span class="status ${sClass} mono">${ev.status_code}</span>
+    <span class="rt mono">${ev.response_time_ms}ms</span>
+    <span class="client-tag ${ev.client_type}">${ev.client_type}</span>
+  `;
+  feed.prepend(row);
+  while(feed.children.length > MAX_FEED_ROWS){
+    feed.removeChild(feed.lastChild);
+  }
+}
+
+function updateStatCards(){
+  document.getElementById('statTotal').textContent = totalRequests;
+  document.getElementById('statAvgRt').textContent =
+    totalRequests ? Math.round(responseTimeSum/totalRequests) + ' ms' : '0 ms';
+  document.getElementById('statErrRate').textContent =
+    totalRequests ? Math.round((errorCount/totalRequests)*100) + '%' : '0%';
+  document.getElementById('statSplit').textContent = `${webCount} / ${mobileCount}`;
+}
+
+function updateRpm(){
+  const now = Date.now();
+  const oneMinAgo = now - 60000;
+  const recent = timelineBuckets.filter(b => b.t >= oneMinAgo).reduce((s,b)=>s+b.count,0);
+  document.getElementById('statRpm').textContent = recent;
+}
+
+function updateStatusChart(){
+  statusChart.data.datasets[0].data = [statusCounts['2xx'], statusCounts['3xx'], statusCounts['4xx'], statusCounts['5xx']];
+  statusChart.update('none');
+}
+
+function updateEndpointsChart(){
+  const sorted = Object.entries(endpointCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  endpointsChart.data.labels = sorted.map(e=>e[0]);
+  endpointsChart.data.datasets[0].data = sorted.map(e=>e[1]);
+  endpointsChart.update('none');
+}
+
+function updateClientChart(){
+  clientChart.data.datasets[0].data = [webCount, mobileCount, otherCount];
+  clientChart.update('none');
+}
+
+function tickBucket(){
+  timelineBuckets.push({ t: currentBucket.bucketStart, count: currentBucket.count });
+  while(timelineBuckets.length > MAX_TIMELINE_POINTS) timelineBuckets.shift();
+  currentBucket = { count:0, bucketStart: Date.now() };
+
+  timelineChart.data.labels = timelineBuckets.map(b => new Date(b.t).toLocaleTimeString('th-TH',{minute:'2-digit',second:'2-digit'}));
+  timelineChart.data.datasets[0].data = timelineBuckets.map(b => b.count);
+  timelineChart.update('none');
+  updateRpm();
+}
+setInterval(tickBucket, BUCKET_MS);
+
+function ingestEvent(ev){
+  if(ev.seq !== undefined){
+    if(seenSeqs.has(ev.seq)) return; // เคยเห็นแล้ว (มาจากอีกช่องทางนึง) ข้ามไป
+    seenSeqs.add(ev.seq);
+  }
+  totalRequests++;
+  responseTimeSum += ev.response_time_ms;
+  const sBucket = statusBucket(ev.status_code);
+  statusCounts[sBucket] = (statusCounts[sBucket]||0) + 1;
+  if(sBucket==='4xx' || sBucket==='5xx') errorCount++;
+
+  endpointCounts[ev.path] = (endpointCounts[ev.path]||0) + 1;
+
+  if(ev.client_type === 'web') webCount++;
+  else if(ev.client_type === 'mobile') mobileCount++;
+  else otherCount++;
+
+  currentBucket.count++;
+
+  pushFeedRow(ev);
+  updateStatCards();
+  updateStatusChart();
+  updateEndpointsChart();
+  updateClientChart();
+
+  if(initialLoadDone) showToast(ev);
+}
+
+// ============================================================
+// mail-style toast notifications
+// ============================================================
+const ENVELOPE_SVG = `<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z"/>
+</svg>`;
+
+// endpoint -> ป้ายชื่อภาษาไทยที่อ่านง่าย (ปรับ/เพิ่มได้ตามระบบจริง)
+function labelForEvent(ev){
+  const p = ev.path;
+  if(p === '/api/register') return 'มีการสมัครสมาชิกใหม่';
+  if(p === '/api/login') return 'มีการเข้าสู่ระบบ';
+  if(p === '/api/logout') return 'มีการออกจากระบบ';
+  if(p === '/save_data') return 'มีการส่งคำขอเข้าพื้นที่ใหม่';
+  if(p === '/delete_data') return 'มีการลบคำขอ';
+  if(p === '/api/update_profile') return 'มีการแก้ไขโปรไฟล์';
+  if(p === '/api/reset_password') return 'มีการรีเซ็ตรหัสผ่าน';
+  if(p.startsWith('/api/')) return 'มีการเรียกใช้งาน API';
+  return 'มีการเรียกใช้งานระบบ';
+}
+
+let toastSeq = 0;
+function showToast(ev){
+  const sBucket = statusBucket(ev.status_code);
+  const cls = sBucket === '4xx' || sBucket === '5xx' ? 'err' : sBucket === '3xx' ? 'pending' : '';
+  const container = document.getElementById('toastContainer');
+
+  const el = document.createElement('div');
+  el.className = `toast ${cls}`;
+  const id = 'toast-' + (++toastSeq);
+  el.id = id;
+  el.innerHTML = `
+    <div class="envelope">${ENVELOPE_SVG}</div>
+    <div class="body">
+      <div class="title">${labelForEvent(ev)}</div>
+      <div class="meta mono">${ev.method} ${ev.path} · ${ev.status_code} · ${ev.response_time_ms}ms</div>
+    </div>
+  `;
+  container.appendChild(el);
+
+  // จำกัดจำนวน toast บนจอไม่ให้ล้น
+  while(container.children.length > 5){
+    container.removeChild(container.firstChild);
+  }
+
+  setTimeout(()=>{
+    el.classList.add('leaving');
+    setTimeout(()=> el.remove(), 320);
+  }, 4200);
+}
+
+// ============================================================
+// backfill + auto-poll (fallback ที่เชื่อถือได้ ไม่พึ่ง websocket อย่างเดียว)
+// ============================================================
+const POLL_INTERVAL_MS = 2000;
+let initialLoadDone = false; // กันไม่ให้เด้ง toast รัวๆ ตอนโหลด history ครั้งแรก
+
+async function pollHistory(){
+  try {
+    const res = await fetch('/api/monitor/history');
+    const history = await res.json();
+    history.forEach(ingestEvent); // ingestEvent เองมีการกันซ้ำผ่าน seq อยู่แล้ว
+  } catch(e) {
+    // เงียบไว้ ไม่ต้องรบกวนผู้ใช้ถ้าพลาดแค่รอบเดียว
+  } finally {
+    initialLoadDone = true;
+  }
+}
+
+pollHistory(); // โหลดครั้งแรกทันทีตอนเปิดหน้า
+setInterval(pollHistory, POLL_INTERVAL_MS); // แล้วอัปเดตเองทุก 2 วิ ไม่ต้องรีเฟรชหน้า
+
+const socket = io('/monitor');
+const dot = document.getElementById('connDot');
+const label = document.getElementById('connLabel');
+
+socket.on('connect', ()=>{
+  dot.classList.add('live');
+  label.textContent = 'Live';
+});
+socket.on('disconnect', ()=>{
+  dot.classList.remove('live');
+  label.textContent = 'Disconnected';
+});
+socket.on('api_event', ingestEvent);
+</script>
+</body>
+</html>

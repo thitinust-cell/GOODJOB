@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>View Document - Demo Company Official</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            --corp-red:         #D9232A; 
+            --bg-body:          #f0f4f8; 
+            --text-main:        #1e293b;
+        }
+
+        body { 
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            position: relative; /* ให้ body เป็นกรอบอ้างอิงสำหรับ absolute */
+        }
+
+        /* --- Background Pattern --- */
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.6;
+        }
+
+        /* --- Navigation Buttons (Absolute = เลื่อนหายไปพร้อมเนื้อหา) --- */
+        .btn-back {
+            position: absolute; top: 16px; left: 16px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
+            padding: 10px 20px; border-radius: 50px;
+            color: #64748b; font-size: 0.85rem; font-weight: 700;
+            border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            z-index: 50; text-decoration: none; display: flex; align-items: center; gap: 8px;
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 768px) { .btn-back { top: 24px; left: 24px; } }
+        .btn-back:hover { color: var(--corp-blue); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+        .lang-btn {
+            position: absolute; top: 16px; right: 16px;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: 50px; padding: 0.5rem 0.8rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            cursor: pointer; transition: all 0.3s ease; z-index: 50;
+        }
+        @media (min-width: 768px) { .lang-btn { top: 24px; right: 24px; } }
+        .lang-btn:hover { background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+        /* ==========================================================
+           📄 MODERN WEB DOCUMENT VIEW (Responsive) 📄
+           ========================================================== */
+        .web-paper { 
+            width: 100%;
+            max-width: 900px;
+            background: white; 
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 28, 84, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        /* ส่วนหัวของฟอร์ม (Header) */
+        .doc-header { 
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            border-bottom: 3px solid var(--corp-blue); 
+            padding: 1.5rem; background: #f8fafc;
+        }
+        @media (min-width: 768px) {
+            .doc-header { flex-direction: row; justify-content: space-between; padding: 2rem 2.5rem; }
+        }
+        .doc-logo img { height: 40px; object-fit: contain; }
+        @media (min-width: 768px) { .doc-logo img { height: 48px; } }
+        
+        .doc-title-box { text-align: center; flex: 1; order: -1; margin-bottom: 1rem; }
+        @media (min-width: 768px) { .doc-title-box { order: 0; margin-bottom: 0; } }
+        
+        .doc-title-box h1 { font-size: 1.25rem; font-weight: 800; color: var(--corp-blue); margin: 0; text-transform: uppercase; line-height: 1.2; }
+        @media (min-width: 768px) { .doc-title-box h1 { font-size: 1.5rem; } }
+        .doc-title-box p { font-size: 0.75rem; color: #64748b; margin: 4px 0 0 0; font-weight: 700; }
+
+        /* ส่วนของเนื้อหาภายในฟอร์ม */
+        .doc-body { padding: 1.5rem; }
+        @media (min-width: 768px) { .doc-body { padding: 2.5rem; } }
+
+        .doc-section { margin-bottom: 2rem; }
+        .doc-section:last-child { margin-bottom: 0; }
+
+        .doc-sec-title { 
+            background: #f1f5f9; border-left: 4px solid var(--corp-blue);
+            font-size: 0.95rem; font-weight: 800; padding: 8px 16px; margin-bottom: 1rem; color: var(--corp-blue); 
+            border-radius: 0 8px 8px 0; display: flex; align-items: center; gap: 8px;
+        }
+        @media (min-width: 768px) { .doc-sec-title { font-size: 1.05rem; margin-bottom: 1.25rem; } }
+        
+        .doc-info-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+        @media (min-width: 640px) { .doc-info-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
+
+        .doc-field { display: flex; flex-direction: column; }
+        .doc-field label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+        .doc-field > span { font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; min-height: 1.5em; color: #1e293b; }
+        @media (min-width: 768px) { .doc-field > span { font-size: 1rem; } }
+
+        /* Checkbox & Options */
+        .doc-check-wrap { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 4px; }
+        .doc-check-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: #64748b; }
+        .doc-check-box { width: 16px; height: 16px; border: 2px solid #cbd5e1; border-radius: 4px; position: relative; background: #fff; transition: all 0.2s; }
+        .doc-check-item.active { color: var(--corp-blue); }
+        .doc-check-item.active .doc-check-box { background: var(--corp-blue); border-color: var(--corp-blue); }
+        .doc-check-item.active .doc-check-box::after { content: '✓'; color: #fff; font-size: 11px; font-weight: bold; position: absolute; top: -1px; left: 2px; }
+
+        /* ตารางพนักงานแบบ Responsive */
+        .table-wrapper { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 0.5rem; }
+        .doc-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .doc-table th { background: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 12px; font-size: 0.75rem; font-weight: 800; color: #64748b; text-align: left; }
+        .doc-table th.center { text-align: center; }
+        .doc-table td { border-bottom: 1px solid #f1f5f9; padding: 10px 12px; font-size: 0.9rem; font-weight: 500; color: #334155; }
+        .doc-table tr:last-child td { border-bottom: none; }
+
+        /* ลายเซ็น */
+        .doc-sig-row { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2rem; }
+        @media (min-width: 640px) { .doc-sig-row { grid-template-columns: 1fr 1fr; gap: 2rem; } }
+        
+        .doc-sig-box { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; text-align: center; background: #fafafa; position: relative; }
+        .doc-sig-line { border-bottom: 1px dashed #94a3b8; height: 80px; margin: 12px 0; display: flex; align-items: center; justify-content: center; position: relative; }
+        .doc-sig-line img { max-height: 70px; max-width: 100%; object-fit: contain; }
+        .doc-sig-name { font-size: 1rem; font-weight: 800; color: #1e293b; margin-top: 8px; }
+        .doc-sig-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .doc-stamp-approved { position: absolute; border: 3px solid #16a34a; color: #16a34a; font-weight: 900; font-size: 1.25rem; padding: 6px 16px; transform: rotate(-15deg); border-radius: 8px; text-transform: uppercase; opacity: 0.85; z-index: 10; }
+
+        /* CSS ที่แก้ไขแล้วสำหรับ Footer */
+        .doc-footer { 
+            background: #f8fafc; padding: 1rem 1.5rem; font-size: 0.75rem; color: #94a3b8; font-weight: 600; 
+            display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: space-between; 
+            border-top: 1px solid #e2e8f0; gap: 0.5rem; 
+        }
+        @media (min-width: 640px) {
+            .doc-footer { flex-direction: row; }
+        }
+
+        /* --- Other Utilities --- */
+        #loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .loader { width: 40px; height: 40px; border: 4px solid #e0e7ff; border-top-color: var(--corp-blue); border-radius: 50%; animation: spin 1s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    </style>
+</head>
+<body class="pt-24 pb-12">
+
+    <div class="bg-pattern"></div>
+
+    <div id="loading-overlay">
+        <div class="flex flex-col items-center"><div class="loader mb-4"></div><div class="text-slate-500 font-extrabold text-sm tracking-widest" data-i18n="loading">LOADING DATA...</div></div>
+    </div>
+
+    <!-- Nav (Absolute - จะเลื่อนขึ้นหลบไปเมื่อ Scroll) -->
+    <a href="dashboard.html" class="btn-back"><i class="ph-bold ph-caret-left text-lg"></i><span class="hidden sm:inline" data-i18n="btn_back">กลับหน้า Dashboard</span></a>
+    
+    <button onclick="toggleLanguage()" class="lang-btn">
+        <img id="lang-flag-img" src="https://flagcdn.com/w40/th.png" alt="TH" class="w-4 md:w-5 h-auto rounded-[2px] border border-slate-200 shadow-sm">
+        <span id="lang-btn-text" class="text-slate-600 font-bold text-xs">EN</span>
+    </button>
+
+    <div class="max-w-4xl mx-auto px-4 md:px-8">
+        
+        <!--  Status Badge (Compact & Sleek at Top Center)  -->
+        <div class="text-center w-full z-10 relative">
+            <div id="compact-status" class="hidden mx-auto mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs md:text-sm font-extrabold shadow-sm border animate-fade-up">
+                <i id="status-icon" class="text-lg"></i>
+                <span id="status-text">สถานะ...</span>
+            </div>
+            <!-- หากถูกปฏิเสธ จะแสดงเหตุผลตรงนี้ให้เล็กลง -->
+            <div id="status-reason" class="hidden mx-auto mb-4 max-w-sm"></div>
+        </div>
+
+        <!--  MODERN WEB PAPER VIEW  -->
+        <div id="content-view" class="hidden animate-fade-up relative z-10" style="animation-delay: 0.1s;">
+            <div class="web-paper">
+                
+                <!-- Header -->
+                <div class="doc-header">
+                    <div class="doc-logo hidden md:block">
+                        <img src="/static/Master_Logo_true_dtac.png" alt="True dtac" crossorigin="anonymous" onerror="this.src='https://i.postimg.cc/mD83WPhy/Master-Logo-true-dtac.png'">
+                    </div>
+                    <div class="doc-title-box">
+                        <h1 data-i18n="doc_title">Access Site Request</h1>
+                        <p>Form ID: FR-018 | Version: 2026.04</p>
+                    </div>
+                    <div class="doc-logo">
+                        <img src="{{ BRAND_LOGO_URL }}" alt="Demo Company" crossorigin="anonymous" onerror="this.style.display='none'">
+                    </div>
+                </div>
+
+                <div class="doc-body">
+                    <!-- Section 1 -->
+                    <div class="doc-section">
+                        <div class="doc-sec-title"><i class="ph-bold ph-identification-card"></i> 1. REQUESTER IDENTIFICATION</div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field"><label>Reference Number</label><span id="doc_id" class="font-mono text-[var(--corp-blue)]">...</span></div>
+                            <div class="doc-field"><label>Submission Date & Time</label><span id="doc_submission">...</span></div>
+                        </div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field"><label data-i18n="lbl_firstname">First Name</label><span id="doc_req_fname">...</span></div>
+                            <div class="doc-field"><label data-i18n="lbl_lastname">Last Name</label><span id="doc_req_lname">...</span></div>
+                        </div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field"><label data-i18n="lbl_dept">Department</label><span id="doc_company">...</span></div>
+                            <div class="doc-field"><label data-i18n="lbl_vendor">Company</label><span id="doc_vendor_company">...</span></div>
+                        </div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field"><label data-i18n="lbl_mobile">Contact Number</label><span id="doc_mobile">...</span></div>
+                            <div class="doc-field"><label data-i18n="lbl_vehicle">Vehicle Reg.</label><span id="doc_vehicle">...</span></div>
+                        </div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field md:col-span-2"><label>User Type</label>
+                                <div class="doc-check-wrap">
+                                    <div class="doc-check-item" id="chk_Internal"><div class="doc-check-box"></div> Internal</div>
+                                    <div class="doc-check-item" id="chk_Subcontractor"><div class="doc-check-box"></div> Subcontractor</div>
+                                    <div class="doc-check-item" id="chk_Customer"><div class="doc-check-box"></div> Customer</div>
+                                    <div class="doc-check-item" id="chk_Vendor"><div class="doc-check-box"></div> Vendor</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2 -->
+                    <div class="doc-section">
+                        <div class="doc-sec-title"><i class="ph-bold ph-briefcase"></i> 2. WORK SCOPE & OBJECTIVES</div>
+                        <div class="doc-field mb-4"><label>Main Objective</label><span id="doc_objective" style="color: var(--corp-blue); font-size: 1.1rem;">...</span></div>
+                        <div class="doc-field mb-5"><label>Detailed Description</label><span id="doc_detail" style="border: 1px solid #f1f5f9; padding: 12px; background: #fafafa; border-radius: 8px; min-height: 60px;">...</span></div>
+                        
+                        <div class="doc-info-grid">
+                            <div class="doc-field md:col-span-2"><label>Work Categories</label>
+                                <div class="doc-check-wrap">
+                                    <div class="doc-check-item" id="chk_Maintenance"><div class="doc-check-box"></div> <span id="txt_Maintenance">Maintenance</span></div>
+                                    <div class="doc-check-item" id="chk_Config"><div class="doc-check-box"></div> Config Server</div>
+                                    <div class="doc-check-item" id="chk_Install"><div class="doc-check-box"></div> Install/Uninstall Server</div>
+                                    <div class="doc-check-item" id="chk_Change"><div class="doc-check-box"></div> Change Equipment</div>
+                                    <div class="doc-check-item" id="chk_Cabling"><div class="doc-check-box"></div> Cabling</div>
+                                    <div class="doc-check-item" id="chk_Other"><div class="doc-check-box"></div> <span id="txt_Other">Other</span></div>
+                                </div>
+                            </div>
+                            <div class="doc-field"><label>Safety Status</label>
+                                <div style="font-size: 13px; font-weight: 900; margin-top: 6px;" id="doc_risk_text">...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3 -->
+                    <div class="doc-section">
+                        <div class="doc-sec-title"><i class="ph-bold ph-map-pin"></i> 3. ACCESS LOCATION & DURATION</div>
+                        <div class="doc-field mb-4"><label>Designated Areas</label><span id="doc_areas">...</span></div>
+                        <div class="doc-info-grid">
+                            <div class="doc-field"><label>Scheduled Start</label><span id="doc_start" class="text-green-600">...</span></div>
+                            <div class="doc-field"><label>Scheduled Finish</label><span id="doc_end" class="text-red-500">...</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4 -->
+                    <div class="doc-section">
+                        <div class="doc-sec-title"><i class="ph-bold ph-users-three"></i> 4. AUTHORIZED PERSONNEL LIST</div>
+                        <div class="table-wrapper">
+                            <table class="doc-table">
+                                <thead>
+                                    <tr>
+                                        <th class="center" style="width: 50px;">#</th>
+                                        <th data-i18n="th_fname">First Name</th>
+                                        <th data-i18n="th_lname">Last Name</th>
+                                        <th style="width: 150px;" data-i18n="th_phone">Contact No.</th>
+                                        <th style="width: 180px;" data-i18n="th_pos">Position / Responsibility</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doc_worker_rows">
+                                    <tr><td colspan="5" class="text-center text-slate-400">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Section 5 -->
+                    <div class="doc-section">
+                        <div class="doc-sig-row">
+                            <div class="doc-sig-box">
+                                <div class="doc-sig-label">Requested By</div>
+                                <div class="doc-sig-line"><img id="sig_req_img" style="display:none;" crossorigin="anonymous"></div>
+                                <div class="doc-sig-name" id="sig_req_name">...</div>
+                                <div class="text-xs text-slate-400 mt-1">ผู้ขอเข้าปฏิบัติงาน</div>
+                            </div>
+                            <div class="doc-sig-box" style="border-top: 4px solid #16a34a; background: #f0fdf4;">
+                                <div class="doc-sig-label text-green-700">Approved By (Admin)</div>
+                                <div class="doc-sig-line border-green-200">
+                                    <img id="sig_app_img" style="display:none;" crossorigin="anonymous">
+                                    <div id="stamp_approved" style="display:none;" class="doc-stamp-approved">Approved</div>
+                                </div>
+                                <div class="doc-sig-name text-green-800" id="sig_app_name">--- PENDING ---</div>
+                                <div class="text-xs text-green-600 mt-1">ผู้อนุมัติ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="doc-footer">
+                    <span>© Demo Company - Digital Form View</span>
+                    <span id="doc_gen_time"></span>
+                </div>
+            </div>
+
+            <!--  Bottom Action Button (Download)  -->
+            <div id="bottom-action-section" class="mt-8 mb-4 hidden">
+                <button onclick="goToDownload()" class="w-full max-w-sm mx-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[var(--corp-blue)] to-[var(--corp-blue-light)] hover:from-[#001238] hover:to-[#1e40a6] text-white font-extrabold py-4 px-6 rounded-2xl shadow-xl shadow-blue-200 transition-all transform active:scale-[0.98] group">
+                    <i class="ph-bold ph-download-simple text-2xl group-hover:-translate-y-1 transition-transform"></i>
+                    <span class="text-lg" data-i18n="btn_download">ดาวน์โหลดเอกสาร (PDF)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-view" class="hidden p-8 md:p-16 text-center bg-white rounded-3xl shadow-xl mt-10 animate-fade-up relative z-10 border border-slate-200">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-red-100">
+                <i class="ph-fill ph-x-circle text-4xl"></i>
+            </div>
+            <h2 class="text-xl md:text-2xl font-extrabold text-slate-800 mb-2" data-i18n="error_title">ไม่พบเอกสาร</h2>
+            <p class="text-slate-500 text-sm mb-6">กรุณาตรวจสอบลิงก์อีกครั้ง หรือเซิร์ฟเวอร์อาจมีปัญหา</p>
+            <a href="dashboard.html" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-6 py-3 rounded-xl transition-colors text-sm shadow-sm">
+                <i class="ph-bold ph-arrow-left"></i> <span data-i18n="btn_back">กลับหน้า Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const isPreviewMode = window.location.hostname.includes('usercontent.goog') || 
+                              ['blob:', 'about:', 'file:'].includes(window.location.protocol);
+
+        const translations = {
+            th: {
+                loading: "กำลังโหลดข้อมูล...",
+                btn_back: "กลับหน้า Dashboard",
+                error_title: "ไม่พบเอกสาร",
+                doc_title: "Access Site Request",
+                status_pending: "สถานะ: รอการอนุมัติ",
+                status_approved: "สถานะ: อนุมัติแล้ว",
+                status_rejected: "สถานะ: ไม่อนุมัติ",
+                btn_download: "ดาวน์โหลดเอกสาร (PDF)",
+                lbl_firstname: "ชื่อ",
+                lbl_lastname: "นามสกุล",
+                lbl_dept: "หน่วยงาน",
+                lbl_vendor: "บริษัท",
+                lbl_mobile: "เบอร์ติดต่อ",
+                lbl_vehicle: "ทะเบียนรถ",
+                th_fname: "ชื่อ",
+                th_lname: "นามสกุล",
+                th_phone: "เบอร์โทร",
+                th_pos: "ตำแหน่ง"
+            },
+            en: {
+                loading: "LOADING DATA...",
+                btn_back: "Back to Dashboard",
+                error_title: "Document Not Found",
+                doc_title: "Access Site Request",
+                status_pending: "Status: Pending",
+                status_approved: "Status: Approved",
+                status_rejected: "Status: Rejected",
+                btn_download: "Download Document (PDF)",
+                lbl_firstname: "First Name",
+                lbl_lastname: "Last Name",
+                lbl_dept: "Department",
+                lbl_vendor: "Company",
+                lbl_mobile: "Mobile Number",
+                lbl_vehicle: "Vehicle Reg.",
+                th_fname: "First Name",
+                th_lname: "Last Name",
+                th_phone: "Contact No.",
+                th_pos: "Position / Responsibility"
+            }
+        };
+
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+        let currentId = null; 
+        let currentData = null;
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('site_lang', lang);
+            document.getElementById('lang-btn-text').innerText = lang === 'th' ? 'EN' : 'TH';
+            document.getElementById('lang-flag-img').src = lang === 'th' ? 'https://flagcdn.com/w40/gb.png' : 'https://flagcdn.com/w40/th.png';
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'SPAN' || el.tagName === 'LABEL' || el.tagName === 'TH') el.innerHTML = translations[lang][key];
+                    else el.innerText = translations[lang][key];
+                }
+            });
+            
+            if(currentData) {
+                renderStatusBadge(currentData);
+            }
+        }
+
+        function toggleLanguage() { setLanguage(currentLang === 'th' ? 'en' : 'th'); }
+
+        const init = async () => {
+            setLanguage(currentLang);
+            const urlParams = new URLSearchParams(window.location.search);
+            currentId = urlParams.get('id');
+
+            if (!currentId) {
+                if (isPreviewMode) {
+                    currentId = "REQ-MOCK-001"; 
+                } else {
+                    alert("No ID provided");
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+            }
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (isPreviewMode) {
+                    console.log("[Preview Mode] Using mock data.");
+                    currentData = {
+                        id: currentId, requester_name: "นายโอ๊ต (Oat)", company: "IT Department", vendor_company: "True dtac", mobile: "081-999-8888", vehicle_reg: "1กข 1234",
+                        req_date: "2026-04-11", req_time: "09:30", objective: "ตรวจสอบระบบ Server (Annual PM)", detail_work: "ตรวจเช็คสถานะเซิร์ฟเวอร์ และทำการอัปเดตระบบปฏิบัติการ",
+                        req_type: "Internal", req_cat: "Vendor", risk: "No", work_types: ["Maintenance", "Config Server"],
+                        areas: ["NOC Room", "Electrical Room", "Data Center 1"],
+                        start_date: "2026-04-12", start_time: "10:00", end_date: "2026-04-12", end_time: "17:00",
+                        status: "Approved", // ลองสลับเป็น Pending หรือ Rejected ดูได้ครับ
+                        approver_name: "ผู้ดูแลระบบ",
+                        approver_comment: "เอกสารครบถ้วน อนุญาตให้เข้าดำเนินการได้",
+                        workers: [{ name: "นายโอ๊ต (Oat)", phone: "0819998888", pos: "System Admin" }, { name: "นายวิชัย สมบูรณ์", phone: "0823334444", pos: "Network Engineer"}],
+                        signature: "", approver_signature: ""
+                    };
+                    renderData(currentData);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    return; 
+                }
+
+                const response = await fetch(`/get_data?id=${currentId}`);
+                if (!response.ok) throw new Error("Fetch failed");
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    currentData = result.data;
+                    renderData(currentData);
+                } else {
+                    throw new Error("Data not found");
+                }
+            } catch (err) {
+                console.error("Init Error:", err);
+                document.getElementById('error-view').classList.remove('hidden');
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        };
+
+        function renderData(item) {
+            // กรอกข้อมูลลงในฟอร์ม Web Form 
+            const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val || '-'; };
+            
+            setEl('doc_id', item.id);
+            setEl('doc_submission', `${item.req_date} @ ${item.req_time}`);
+            
+            const reqNameParts = (item.requester_name || '').split(' ');
+            const reqFname = reqNameParts[0] || '-';
+            const reqLname = reqNameParts.slice(1).join(' ') || '-';
+            setEl('doc_req_fname', reqFname);
+            setEl('doc_req_lname', reqLname);
+
+            setEl('doc_mobile', item.mobile);
+            setEl('doc_company', item.company);
+            setEl('doc_vendor_company', item.vendor_company);
+            setEl('doc_vehicle', item.vehicle_reg);
+            setEl('doc_objective', item.objective);
+            setEl('doc_detail', item.detail_work);
+            setEl('doc_areas', Array.isArray(item.areas) ? item.areas.join(', ') : item.areas);
+            setEl('doc_start', `${item.start_date} @ ${item.start_time}`);
+            setEl('doc_end', `${item.end_date} @ ${item.end_time}`);
+            setEl('doc_gen_time', "Viewed on: " + new Date().toLocaleString('en-GB'));
+
+            const setCheck = (id, cond) => { 
+                const el = document.getElementById(id);
+                if(el) el.className = cond ? 'doc-check-item active' : 'doc-check-item'; 
+            };
+            setCheck('chk_Internal', item.req_type === 'Internal');
+            setCheck('chk_Subcontractor', item.req_type === 'Subcontractor');
+            setCheck('chk_Customer', item.req_cat === 'Customer');
+            setCheck('chk_Vendor', item.req_cat === 'Vendor');
+            
+            const wTypes = item.work_types || [];
+            
+            const maintVal = wTypes.find(t => t.startsWith('Maintenance'));
+            setCheck('chk_Maintenance', !!maintVal);
+            if(maintVal) { const el = document.getElementById('txt_Maintenance'); if(el) el.innerText = maintVal; }
+
+            setCheck('chk_Config', wTypes.includes('Config Server'));
+            setCheck('chk_Install', wTypes.includes('Install/Uninstall Server'));
+            setCheck('chk_Change', wTypes.includes('Change Equipment'));
+            setCheck('chk_Cabling', wTypes.includes('Cabling'));
+
+            const otherVal = wTypes.find(t => t.startsWith('Other'));
+            setCheck('chk_Other', !!otherVal);
+            if(otherVal) { const el = document.getElementById('txt_Other'); if(el) el.innerText = otherVal; }
+
+            const rText = document.getElementById('doc_risk_text');
+            if (rText) {
+                rText.innerText = `HOT WORK RISK: ${item.risk === 'Yes' ? 'CRITICAL (DANGER)' : 'NONE'}`;
+                rText.style.color = item.risk === 'Yes' ? '#D9232A' : '#16a34a';
+            }
+
+            const tbody = document.getElementById('doc_worker_rows');
+            let workerHtml = '';
+            const workers = Array.isArray(item.workers) ? item.workers : [];
+            workers.forEach((w, i) => {
+                const wNameParts = (w.name || '').split(' ');
+                const wFname = wNameParts[0] || '-';
+                const wLname = wNameParts.slice(1).join(' ') || '-';
+                workerHtml += `<tr><td class="text-center font-bold text-slate-400">${i+1}</td><td>${wFname}</td><td>${wLname}</td><td>${w.phone || '-'}</td><td>${w.pos || '-'}</td></tr>`;
+            });
+            tbody.innerHTML = workerHtml || '<tr><td colspan="5" class="text-center text-slate-400 py-4">No workers listed</td></tr>';
+
+            // Signatures
+            const reqImg = document.getElementById('sig_req_img');
+            if (item.signature && item.signature.length > 50) { 
+                reqImg.src = item.signature; reqImg.style.display = 'block'; 
+            }
+            setEl('sig_req_name', `( ${item.requester_name} )`);
+
+            const appImg = document.getElementById('sig_app_img');
+            const stamp = document.getElementById('stamp_approved');
+            if (item.status === 'Approved') {
+                if (item.approver_signature && item.approver_signature.length > 50) { 
+                    appImg.src = item.approver_signature; appImg.style.display = 'block'; stamp.style.display = 'none';
+                } else { stamp.style.display = 'block'; appImg.style.display = 'none'; }
+                setEl('sig_app_name', `( ${item.approver_name || 'Authorized Administrator'} )`);
+            } else if (item.status === 'Rejected') {
+                setEl('sig_app_name', `( REJECTED )`);
+            }
+
+            renderStatusBadge(item);
+            document.getElementById('content-view').classList.remove('hidden');
+        }
+
+        // ---  อัปเดตฟังก์ชันแสดงผลสถานะแบบ Compact  ---
+        function renderStatusBadge(item) {
+            const badge = document.getElementById('compact-status');
+            const icon = document.getElementById('status-icon');
+            const text = document.getElementById('status-text');
+            const reasonDiv = document.getElementById('status-reason');
+            const bottomAction = document.getElementById('bottom-action-section');
+            
+            badge.classList.remove('hidden');
+            reasonDiv.classList.add('hidden');
+            bottomAction.classList.add('hidden'); 
+
+            const dict = translations[currentLang];
+
+            if(item.status === 'Approved') {
+                badge.className = "mx-auto mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs md:text-sm font-extrabold shadow-sm animate-fade-up bg-green-50 text-green-700 border border-green-200";
+                icon.className = "ph-fill ph-check-circle text-lg";
+                text.innerText = dict.status_approved;
+                
+                // โชว์ปุ่มดาวน์โหลดที่ด้านล่างสุด
+                bottomAction.classList.remove('hidden');
+
+            } 
+            else if(item.status === 'Rejected') {
+                badge.className = "mx-auto mb-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs md:text-sm font-extrabold shadow-sm animate-fade-up bg-red-50 text-red-700 border border-red-200";
+                icon.className = "ph-fill ph-x-circle text-lg";
+                text.innerText = dict.status_rejected;
+                
+                // Show Reject Reason ด้านล่าง Badge
+                const reason = item.approver_comment || (currentLang === 'th' ? 'ไม่ระบุเหตุผล' : 'No reason provided');
+                reasonDiv.innerHTML = `
+                    <div class="inline-flex items-center justify-center gap-1.5 text-[11px] md:text-xs font-medium bg-white px-3 py-1.5 rounded-lg border border-red-100 shadow-sm text-slate-600 animate-fade-up">
+                        <i class="ph-bold ph-info text-red-500"></i>
+                        <span><span class="opacity-70 uppercase tracking-wider mr-1">Reason:</span>${reason}</span>
+                    </div>
+                `;
+                reasonDiv.classList.remove('hidden');
+            } 
+            else {
+                badge.className = "mx-auto mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs md:text-sm font-extrabold shadow-sm animate-fade-up bg-orange-50 text-orange-700 border border-orange-200";
+                icon.className = "ph-bold ph-clock-countdown animate-pulse text-lg";
+                text.innerText = dict.status_pending;
+            }
+        }
+
+        function goToDownload() {
+            if(!currentId) return;
+            window.location.href = `download.html?id=${currentId}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

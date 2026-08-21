@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Detail - Admin Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root { 
+            --admin-red: #D9232A; 
+            --admin-red-light: #EF4444; 
+            --corp-blue: #001C54; 
+            --corp-blue-light: #2A56C6;
+        }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background: #f4f7f9; 
+            color: #1e293b; 
+        }
+        
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.5;
+        }
+
+        /* Navigation Bar */
+        .admin-nav {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+        }
+        
+        /* Premium Cards */
+        .premium-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 28px; 
+            box-shadow: 0 20px 40px -15px rgba(0,28,84,0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
+            overflow: hidden;
+        }
+
+        /* Profile Image Container */
+        .profile-img-container {
+            width: 140px; height: 140px; border-radius: 50%; 
+            border: 6px solid white;
+            box-shadow: 0 12px 30px -5px rgba(0, 28, 84, 0.2); 
+            margin: 0 auto;
+            overflow: hidden; background-color: #f8fafc;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; z-index: 20;
+            transform: translateY(-50%);
+            margin-bottom: -50px;
+        }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Cover Banner Gradient */
+        .cover-banner {
+            background: linear-gradient(135deg, var(--corp-blue) 0%, var(--corp-blue-light) 50%, var(--admin-red) 100%);
+            height: 180px; width: 100%;
+            position: absolute; top: 0; left: 0; z-index: 10;
+        }
+        .cover-pattern {
+            position: absolute; inset: 0; z-index: 15; opacity: 0.1;
+            background-image: radial-gradient(#ffffff 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
+
+        /* Loading Spinner */
+        .loader { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--corp-blue); border-radius: 50%; animation: spin 1s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(217, 35, 42, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(217, 35, 42, 0); }
+        }
+        .status-badge-active { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="pb-10">
+
+    <div class="bg-pattern"></div>
+
+    <!-- Top Navigation Bar พร้อมโลโก้ W&W -->
+    <nav class="admin-nav sticky top-0 z-50 w-full px-4 py-3 mb-8">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 md:gap-5">
+                <!-- ปุ่มกลับ -->
+                <a href="admin_dashboard.html" class="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-[var(--corp-blue)] hover:border-blue-200 transition-all shadow-sm active:scale-95 group">
+                    <i class="ph-bold ph-arrow-left text-xl group-hover:-translate-x-0.5 transition-transform"></i>
+                </a>
+                
+                <!-- เส้นกั้น -->
+                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                
+                <!-- โลโก้ W&W -->
+                <img src="{{ BRAND_LOGO_URL }}" alt="Demo Company Logo" class="h-7 md:h-9 object-contain" onerror="this.style.display='none'">
+                
+                <div class="flex flex-col hidden sm:flex ml-2">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Admin Portal</span>
+                    <span class="text-sm font-extrabold text-[var(--corp-blue)] leading-none">User Profile</span>
+                </div>
+            </div>
+
+            <!-- ป้าย Admin View -->
+            <div class="bg-blue-50 text-[var(--corp-blue)] px-3 py-1.5 rounded-xl text-xs font-bold border border-blue-100 flex items-center gap-1.5 shadow-sm">
+                <i class="ph-fill ph-shield-check text-lg"></i> <span class="hidden sm:block">Admin View</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 relative">
+        
+        <!-- Loading State -->
+        <div id="loading-spinner" class="flex flex-col items-center justify-center py-32">
+            <div class="loader mb-4"></div>
+            <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading User Data...</p>
+        </div>
+
+        <!-- Content State -->
+        <div id="user-content" class="hidden space-y-6 md:space-y-8 animate-slide-up">
+            
+            <!-- Profile Header Card -->
+            <div class="premium-card relative pt-44 pb-8 px-6 text-center">
+                <!-- Cover Background -->
+                <div class="cover-banner"></div>
+                <div class="cover-pattern"></div>
+                
+                <!-- Profile Image -->
+                <div class="profile-img-container">
+                    <img id="user-img" src="" style="display:none;">
+                    <i class="ph-fill ph-user text-6xl text-slate-300" id="fallback-icon"></i>
+                </div>
+                
+                <!-- User Info -->
+                <div class="relative z-20 mt-2">
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" id="user-fullname">-</h2>
+                    
+                    <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
+                        <span class="bg-white text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200 flex items-center gap-1.5 shadow-sm">
+                            <i class="ph-fill ph-identification-badge text-purple-500 text-base"></i> <span id="user-username">-</span>
+                        </span>
+                        
+                        <span id="user-status" class="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                            <!-- JS จะใส่สีและไอคอนให้ -->
+                        </span>
+                    </div>
+
+                    <div class="mt-6 flex justify-center">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                            <i class="ph-duotone ph-calendar-check text-slate-400 text-lg"></i>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide" id="user-registered">Registered: -</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="premium-card p-6 md:p-8">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-[var(--corp-blue)] flex items-center justify-center">
+                        <i class="ph-fill ph-address-book text-xl"></i>
+                    </div>
+                    <h3 class="text-base md:text-lg font-extrabold text-slate-800 uppercase tracking-wider">
+                        ข้อมูลการติดต่อ (Contact Info)
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    
+                    <!-- Emails Column -->
+                    <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 ml-1">
+                            <i class="ph-fill ph-envelope-simple text-blue-500 text-base"></i> อีเมล (Emails)
+                        </div>
+                        <div id="email-list" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Phones Column -->
+                    <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 ml-1">
+                            <i class="ph-fill ph-phone text-emerald-500 text-base"></i> เบอร์โทรศัพท์ (Phones)
+                        </div>
+                        <div id="phone-list" class="space-y-3"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const isPreviewMode = ['blob:', 'about:', 'file:'].includes(window.location.protocol) || window.location.hostname.includes('usercontent.goog');
+
+            if (isPreviewMode) {
+                // Mock Data สำหรับโหมด Preview
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('user-content').classList.remove('hidden');
+
+                document.getElementById('user-fullname').innerText = "Demo User";
+                document.getElementById('user-username').innerText = "@demo_user";
+                document.getElementById('user-registered').innerText = "Registered: 2026-04-09 10:00:00";
+                
+                // รูปภาพจำลอง
+                document.getElementById('user-img').src = "{{ BRAND_LOGO_URL }}";
+                document.getElementById('user-img').style.display = 'block';
+                document.getElementById('fallback-icon').style.display = 'none';
+
+                // สถานะจำลอง
+                const statusBadge = document.getElementById('user-status');
+                statusBadge.className = 'bg-green-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black border border-green-600 shadow-lg shadow-green-200 flex items-center gap-1.5 status-badge-active';
+                statusBadge.innerHTML = '<i class="ph-bold ph-check text-sm"></i> ACTIVE';
+                
+                document.getElementById('email-list').innerHTML = `
+                    <div class="group p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-envelope-simple text-lg"></i></div>
+                            <span class="text-sm font-bold text-slate-700">demo@example.com</span>
+                        </div>
+                        <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-blue-200">หลัก</span>
+                    </div>
+                    <div class="group p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex items-center justify-between mt-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-envelope-simple text-lg"></i></div>
+                            <span class="text-sm font-bold text-slate-700">nattapong@gmail.com</span>
+                        </div>
+                        <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-wider border border-slate-200">ส่วนตัว</span>
+                    </div>
+                `;
+                
+                document.getElementById('phone-list').innerHTML = `
+                    <div class="group p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-phone text-lg"></i></div>
+                            <span class="text-sm font-bold text-slate-700">081-999-8888</span>
+                        </div>
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-emerald-200">หลัก</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // ดึง ID ของ User จาก URL (เช่น admin_view_user.html?id=xxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUserId = urlParams.get('id');
+
+            if (!targetUserId) {
+                alert('ไม่พบรหัสผู้ใช้งาน');
+                try { window.location.href = 'admin_dashboard.html'; } catch(e) {}
+                return;
+            }
+
+            try {
+                // เรียก API ดึงข้อมูล User โดยส่ง id ไปด้วย (ไม่ลบลอจิกเดิม)
+                const response = await fetch(`/api/admin/get_user_detail?id=${targetUserId}`);
+                const result = await response.json();
+                
+                document.getElementById('loading-spinner').classList.add('hidden');
+                
+                if (result.success) {
+                    const user = result.data;
+                    document.getElementById('user-content').classList.remove('hidden');
+
+                    // ข้อมูลพื้นฐาน
+                    document.getElementById('user-fullname').innerText = user.full_name;
+                    document.getElementById('user-username').innerText = "@" + user.username;
+                    document.getElementById('user-registered').innerText = "Registered: " + (user.created_at || '-');
+
+                    // อัปเดต Status Badge ให้สวยงามขึ้น
+                    const statusBadge = document.getElementById('user-status');
+                    if(user.status === 'active') {
+                        statusBadge.className = 'bg-green-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black border border-green-600 shadow-lg shadow-green-200 flex items-center gap-1.5 status-badge-active';
+                        statusBadge.innerHTML = '<i class="ph-bold ph-check text-sm"></i> ACTIVE';
+                    } else if (user.status === 'pending') {
+                        statusBadge.className = 'bg-orange-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black border border-orange-600 shadow-lg shadow-orange-200 flex items-center gap-1.5';
+                        statusBadge.innerHTML = '<i class="ph-bold ph-clock text-sm"></i> PENDING';
+                    } else {
+                        statusBadge.className = 'bg-red-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black border border-red-600 shadow-lg shadow-red-200 flex items-center gap-1.5';
+                        statusBadge.innerHTML = '<i class="ph-bold ph-x text-sm"></i> REJECTED';
+                    }
+
+                    // รูปโปรไฟล์
+                    if (user.profile_pic) {
+                        const img = document.getElementById('user-img');
+                        img.src = user.profile_pic;
+                        img.style.display = 'block';
+                        document.getElementById('fallback-icon').style.display = 'none';
+                    }
+
+                    // สร้าง List อีเมล (รูปแบบใหม่สวยงาม)
+                    const emailContainer = document.getElementById('email-list');
+                    let emailHTML = '';
+                    if (user.email && user.email !== '-') {
+                        emailHTML += `
+                            <div class="group p-3.5 md:p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-envelope-simple text-lg"></i></div>
+                                    <span class="text-sm font-bold text-slate-700 truncate max-w-[150px] md:max-w-[250px]" title="${user.email}">${user.email}</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-blue-200 shrink-0">หลัก</span>
+                            </div>`;
+                    }
+                    if (user.additional_emails && user.additional_emails.length > 0) {
+                        user.additional_emails.forEach(e => {
+                            const typeText = e.type === 'กำหนดเอง' ? e.customType : e.type;
+                            emailHTML += `
+                            <div class="group p-3.5 md:p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-envelope-simple text-lg"></i></div>
+                                    <span class="text-sm font-bold text-slate-700 truncate max-w-[150px] md:max-w-[250px]" title="${e.value}">${e.value}</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-wider border border-slate-200 shrink-0">${typeText}</span>
+                            </div>`;
+                        });
+                    }
+                    if(!emailHTML) emailHTML = '<div class="text-xs font-bold text-slate-400 bg-white border border-slate-200 rounded-2xl p-4 text-center">ไม่มีข้อมูลอีเมล</div>';
+                    emailContainer.innerHTML = emailHTML;
+
+                    // สร้าง List เบอร์โทร (รูปแบบใหม่สวยงาม)
+                    const phoneContainer = document.getElementById('phone-list');
+                    let phoneHTML = '';
+                    if (user.phone && user.phone !== '-') {
+                        phoneHTML += `
+                            <div class="group p-3.5 md:p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-phone text-lg"></i></div>
+                                    <span class="text-sm font-bold text-slate-700">${user.phone}</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black uppercase tracking-wider border border-emerald-200 shrink-0">หลัก</span>
+                            </div>`;
+                    }
+                    if (user.additional_phones && user.additional_phones.length > 0) {
+                        user.additional_phones.forEach(p => {
+                            const typeText = p.type === 'กำหนดเอง' ? p.customType : p.type;
+                            phoneHTML += `
+                            <div class="group p-3.5 md:p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><i class="ph-fill ph-phone text-lg"></i></div>
+                                    <span class="text-sm font-bold text-slate-700">${p.value}</span>
+                                </div>
+                                <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-wider border border-slate-200 shrink-0">${typeText}</span>
+                            </div>`;
+                        });
+                    }
+                    if(!phoneHTML) phoneHTML = '<div class="text-xs font-bold text-slate-400 bg-white border border-slate-200 rounded-2xl p-4 text-center">ไม่มีข้อมูลเบอร์โทรศัพท์</div>';
+                    phoneContainer.innerHTML = phoneHTML;
+
+                } else {
+                    alert('ไม่สามารถโหลดข้อมูลผู้ใช้ได้: ' + result.message);
+                    try { window.location.href = 'admin_dashboard.html'; } catch(e) {}
+                }
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+                try { window.location.href = 'admin_dashboard.html'; } catch(e) {}
+            }
+        });
+    </script>
+</body>
+</html>

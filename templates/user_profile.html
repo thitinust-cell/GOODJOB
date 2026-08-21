@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Profile - Demo Company Official</title>
+    
+    <link rel="icon" type="image/png" href="{{ BRAND_LOGO_URL }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --corp-blue:        #001C54; 
+            --corp-blue-light:  #2A56C6; 
+            --text-main:        #1e293b;
+            --text-muted:       #64748b;
+        }
+
+        body { 
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #e2e8f0, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 2rem;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.6;
+        }
+
+        .floating-nav {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08); 
+            border-radius: 50px;
+        }
+
+        .bento-card { 
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px);
+            border-radius: 24px; box-shadow: 0 15px 40px -10px rgba(0,28,84,0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
+        }
+
+        .profile-img-container {
+            width: 120px; height: 120px; border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 8px 24px rgba(0, 28, 84, 0.12); position: relative; margin: 0 auto;
+            overflow: hidden; background-color: #f1f5f9;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .data-box {
+            background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 1rem; transition: all 0.2s;
+        }
+        .data-box:hover { border-color: var(--corp-blue-light); box-shadow: 0 4px 12px rgba(42,86,198,0.05); transform: translateY(-2px); }
+        
+        .contact-badge {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800;
+            padding: 2px 8px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge-main { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge-sub { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+        .loader { width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: var(--corp-blue); border-radius: 50%; animation: spin 1s infinite linear; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="py-4 md:py-8 px-3 md:px-6 lg:px-8 relative">
+
+    <div class="bg-pattern"></div>
+
+    <!-- Navbar -->
+    <nav class="relative z-50 mx-auto w-full max-w-4xl floating-nav px-4 py-2.5 md:px-6 md:py-3 flex justify-between items-center mb-8">
+        <div class="flex items-center gap-3">
+            <a href="dashboard.html" class="flex items-center justify-center bg-white rounded-full p-2 shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors text-slate-600 hover:text-[var(--corp-blue)]" title="กลับหน้าหลัก">
+                <i class="ph-bold ph-caret-left text-xl"></i>
+            </a>
+            <div class="h-6 w-px bg-slate-200"></div>
+            <!-- โลโก้บริษัท -->
+            <img src="{{ BRAND_LOGO_URL }}" alt="Demo Company Logo" class="h-6 md:h-8 object-contain">
+            <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div class="font-extrabold text-[var(--corp-blue)] text-sm md:text-base hidden sm:block">ข้อมูลผู้ใช้งาน</div>
+        </div>
+    </nav>
+
+    <div class="max-w-3xl mx-auto bento-card p-6 md:p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-[var(--corp-blue)] to-[var(--corp-blue-light)] z-0 rounded-t-[24px]"></div>
+        
+        <div class="relative z-10 pt-10">
+            
+            <!-- ส่วนรูปภาพโปรไฟล์ -->
+            <div class="text-center mb-8 relative">
+                <div class="profile-img-container">
+                    <img id="preview-img" src="" style="display:none;">
+                    <i class="ph-fill ph-user text-5xl text-slate-400" id="fallback-icon"></i>
+                </div>
+                <div class="mt-4">
+                    <h2 class="text-2xl font-black text-slate-800" id="display-name">Loading...</h2>
+                    <div class="text-sm font-bold text-[var(--corp-blue-light)] mt-0.5 inline-flex items-center justify-center gap-1 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                        <i class="ph-fill ph-identification-badge"></i> <span id="display-username">@username</span>
+                    </div>
+                </div>
+                
+                <!-- ปุ่มลอยสำหรับไปหน้าแก้ไข -->
+                <div class="absolute top-0 right-0">
+                    <a href="user_edit_profile.html" class="flex items-center gap-2 bg-white text-slate-600 hover:text-[var(--corp-blue)] px-4 py-2 rounded-xl shadow-sm border border-slate-200 hover:border-blue-200 transition-all font-bold text-xs md:text-sm active:scale-95 group">
+                        <i class="ph-bold ph-pencil-simple text-base group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden sm:inline">แก้ไขข้อมูล</span>
+                    </a>
+                </div>
+            </div>
+
+            <div id="loading-spinner" class="flex justify-center py-10"><div class="loader"></div></div>
+
+            <div id="profile-content" class="hidden space-y-6">
+                
+                <!-- ข้อมูลติดต่อหลัก -->
+                <div>
+                    <h3 class="text-sm font-extrabold text-[var(--corp-blue)] uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
+                        <i class="ph-fill ph-address-book text-lg"></i> ข้อมูลการติดต่อหลัก
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="data-box flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                <i class="ph-fill ph-envelope-simple text-xl"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Email</div>
+                                <div class="font-bold text-slate-700 text-sm md:text-base truncate" id="main-email">-</div>
+                            </div>
+                        </div>
+                        <div class="data-box flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                                <i class="ph-fill ph-phone text-xl"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Phone Number</div>
+                                <div class="font-bold text-slate-700 text-sm md:text-base truncate" id="main-phone">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ช่องทางติดต่อเพิ่มเติม -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- อีเมลเพิ่มเติม -->
+                    <div>
+                        <h3 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="ph-bold ph-envelope-open"></i> อีเมลเพิ่มเติม
+                        </h3>
+                        <div id="additional-emails" class="space-y-2">
+                            <!-- JS จะใส่เนื้อหาตรงนี้ -->
+                        </div>
+                    </div>
+
+                    <!-- เบอร์โทรเพิ่มเติม -->
+                    <div>
+                        <h3 class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="ph-bold ph-phone-call"></i> เบอร์โทรศัพท์เพิ่มเติม
+                        </h3>
+                        <div id="additional-phones" class="space-y-2">
+                            <!-- JS จะใส่เนื้อหาตรงนี้ -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- ปุ่มออก -->
+            <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                <a href="dashboard.html" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[var(--corp-blue)] transition-colors bg-slate-50 hover:bg-blue-50 px-6 py-2.5 rounded-xl border border-slate-200">
+                    <i class="ph-bold ph-arrow-left"></i> กลับหน้า Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const isPreviewMode = window.location.hostname.includes('usercontent.goog') || 
+                              ['blob:', 'about:', 'file:'].includes(window.location.protocol);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (isPreviewMode) {
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('profile-content').classList.remove('hidden');
+                
+                document.getElementById('display-name').innerText = "Demo User (Preview)";
+                document.getElementById('display-username').innerText = "@demo_user";
+                document.getElementById('main-email').innerText = "demo@example.com";
+                document.getElementById('main-phone').innerText = "081-234-5678";
+                
+                document.getElementById('additional-emails').innerHTML = `
+                    <div class="bg-white border border-slate-200 p-3 rounded-xl flex items-center justify-between shadow-sm">
+                        <span class="text-sm font-bold text-slate-700">demo@company.local</span>
+                        <span class="contact-badge badge-sub">บริษัท</span>
+                    </div>
+                `;
+                document.getElementById('additional-phones').innerHTML = `
+                    <div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user_profile');
+                const result = await response.json();
+                
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('profile-content').classList.remove('hidden');
+
+                if (result.success) {
+                    document.getElementById('display-name').innerText = result.full_name;
+                    document.getElementById('display-username').innerText = "@" + result.username;
+                    
+                    document.getElementById('main-email').innerText = result.email !== '-' ? result.email : 'ไม่ได้ระบุ';
+                    document.getElementById('main-phone').innerText = result.phone !== '-' ? result.phone : 'ไม่ได้ระบุ';
+
+                    if (result.profile_pic) {
+                        const img = document.getElementById('preview-img');
+                        img.src = result.profile_pic;
+                        img.style.display = 'block';
+                        document.getElementById('fallback-icon').style.display = 'none';
+                    }
+
+                    // Render Additional Emails
+                    const emailContainer = document.getElementById('additional-emails');
+                    if (result.additional_emails && result.additional_emails !== '[]') {
+                        try {
+                            const emails = JSON.parse(result.additional_emails);
+                            if(emails.length > 0) {
+                                emailContainer.innerHTML = emails.map(e => `
+                                    <div class="bg-white border border-slate-200 p-2.5 md:p-3 rounded-xl flex items-center justify-between shadow-sm hover:border-blue-200 transition-colors">
+                                        <span class="text-xs md:text-sm font-bold text-slate-700 truncate mr-2" title="${e.value}">${e.value}</span>
+                                        <span class="contact-badge badge-sub shrink-0">${e.type === 'กำหนดเอง' ? e.customType : e.type}</span>
+                                    </div>
+                                `).join('');
+                            } else {
+                                emailContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>';
+                            }
+                        } catch(e) { emailContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>'; }
+                    } else {
+                        emailContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>';
+                    }
+
+                    // Render Additional Phones
+                    const phoneContainer = document.getElementById('additional-phones');
+                    if (result.additional_phones && result.additional_phones !== '[]') {
+                        try {
+                            const phones = JSON.parse(result.additional_phones);
+                            if(phones.length > 0) {
+                                phoneContainer.innerHTML = phones.map(p => `
+                                    <div class="bg-white border border-slate-200 p-2.5 md:p-3 rounded-xl flex items-center justify-between shadow-sm hover:border-blue-200 transition-colors">
+                                        <span class="text-xs md:text-sm font-bold text-slate-700 truncate mr-2">${p.value}</span>
+                                        <span class="contact-badge badge-sub shrink-0">${p.type === 'กำหนดเอง' ? p.customType : p.type}</span>
+                                    </div>
+                                `).join('');
+                            } else {
+                                phoneContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>';
+                            }
+                        } catch(e) { phoneContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>'; }
+                    } else {
+                        phoneContainer.innerHTML = '<div class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-xl text-center border border-slate-100">ไม่มีข้อมูลเพิ่มเติม</div>';
+                    }
+                }
+            } catch (err) {
+                console.error("Load profile error:", err);
+            }
+        });
+    </script>
+</body>
+</html>

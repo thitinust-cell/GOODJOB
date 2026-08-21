@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard - Demo Company Official</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --corp-blue:         #001C54; 
+            --corp-blue-light:   #2A56C6; 
+            --corp-red:          #D9232A; 
+            --text-main:         #1e293b;
+            --text-muted:        #64748b;
+            --border-line:       #e2e8f0;
+        }
+
+        /* ---  Animated Background  --- */
+        body { 
+            color: var(--text-main);
+            font-family: 'Sarabun', sans-serif; 
+            background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #e2e8f0, #f8fafc);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .bg-pattern {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px; opacity: 0.6;
+        }
+
+        .text-corp-main { color: var(--corp-blue) !important; }
+        .text-corp-light { color: var(--corp-blue-light) !important; }
+
+        /* ---  Premium Cards with Hover Glow  --- */
+        .bento-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px -10px rgba(0,28,84,0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .bento-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 40px -10px rgba(0,28,84,0.12);
+        }
+        @media (min-width: 768px) {
+            .bento-card { border-radius: 24px; padding: 1.5rem; }
+        }
+
+        /* Floating Navbar */
+        .floating-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.08); 
+            border-radius: 50px;
+            position: relative; z-index: 50;
+        }
+
+        /* Stat Icons */
+        .stat-icon-bg {
+            position: absolute; right: -15px; bottom: -20px;
+            font-size: 5.5rem; opacity: 0.05; pointer-events: none;
+            transform: rotate(-15deg); 
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @media (min-width: 768px) { .stat-icon-bg { font-size: 7.5rem; right: -20px; bottom: -25px; } }
+        .bento-card:hover .stat-icon-bg { opacity: 0.15; transform: rotate(0deg) scale(1.15) translateY(-10px); }
+
+        .card-stat {
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            min-height: 90px; padding: 1rem 0.5rem; position: relative; overflow: hidden;
+            cursor: pointer; /* เพิ่ม cursor pointer ให้คลิกได้ */
+        }
+        @media (min-width: 768px) { .card-stat { min-height: 120px; align-items: flex-start; text-align: left; padding: 1.5rem; } }
+
+        .stat-value { font-size: 2rem; font-weight: 900; line-height: 1; margin: 0.25rem 0; letter-spacing: -0.5px; z-index: 10;}
+        @media (min-width: 768px) { .stat-value { font-size: 3rem; letter-spacing: -1px; margin: 0.5rem 0; } }
+
+        .stat-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; justify-content: center; z-index: 10;}
+        @media (min-width: 768px) { .stat-label { font-size: 0.85rem; gap: 6px; justify-content: flex-start; } }
+
+        .stat-blue { background-color: #EFF6FF; color: #1E3A8A; border-color: #DBEAFE; border-top: 4px solid #3b82f6;}
+        .stat-orange { background-color: #FFF7ED; color: #9A3412; border-color: #FFEDD5; border-top: 4px solid #f97316;}
+        .stat-green { background-color: #F0FDF4; color: #166534; border-color: #DCFCE7; border-top: 4px solid #10b981;}
+
+        /* --- Calendar Widget (โทนเดียวกับธีมหลัก: navy/blue, badge tokens) --- */
+        #calendar-card { display: flex; flex-direction: column; border-top: 4px solid var(--corp-blue); position: relative; }
+        #calendar-card:hover { transform: none; box-shadow: 0 10px 30px -10px rgba(0,28,84,0.05); }
+        #calendar-body { display: flex; flex-direction: column; min-height: 0; }
+
+        .cal-nav-btn {
+            width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center;
+            border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+            background: white; border: 1px solid var(--border-line); color: var(--text-muted);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .cal-nav-btn:hover { border-color: var(--corp-blue); color: var(--corp-blue); background: #f0f4ff; }
+        .cal-nav-btn:active { transform: scale(.88); }
+        .cal-today-btn {
+            font-size: 0.68rem; font-weight: 800; color: var(--corp-blue); background: #f0f4ff;
+            border: 1px solid #dbe4ff; padding: 5px 12px; border-radius: 50px; transition: all .2s; cursor: pointer;
+        }
+        .cal-today-btn:hover { background: var(--corp-blue); color: #fff; border-color: var(--corp-blue); }
+        .cal-today-btn:active { transform: scale(.92); }
+
+        /* Month/year jump + info popovers */
+        .cal-title-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 4px 8px 4px 2px; border-radius: 10px; transition: background .15s; }
+        .cal-title-btn:hover { background: #f0f4ff; }
+        .cal-title-btn .ph-caret-down { font-size: .65rem; color: #94a3b8; margin-left: 1px; }
+        .info-btn {
+            width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border-line); background: #fff;
+            display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer;
+            font-size: .85rem; transition: all .15s;
+        }
+        .info-btn:hover, .info-btn.open { border-color: var(--corp-blue-light); color: var(--corp-blue-light); background: #f0f4ff; }
+
+        .cal-picker-pop, .cal-legend-pop {
+            position: absolute; z-index: 40; background: #fff; border: 1px solid var(--border-line);
+            border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,28,84,.18); padding: 14px;
+            display: none; opacity: 0; transform: translateY(-6px); transition: all .18s;
+        }
+        .cal-picker-pop.show, .cal-legend-pop.show { display: block; }
+        .cal-picker-pop.anim, .cal-legend-pop.anim { opacity: 1; transform: translateY(0); }
+        .cal-picker-pop { top: 44px; left: 4px; width: 250px; }
+        .cal-legend-pop { top: 44px; right: 4px; width: 220px; }
+        .cal-picker-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .cal-picker-row select { flex: 1; border: 1px solid var(--border-line); border-radius: 10px; padding: 8px; font-family: inherit; font-weight: 700; font-size: .82rem; color: var(--text-main); background: #f8fafc; }
+        .cal-picker-go { width: 100%; background: var(--corp-blue); color: #fff; border: none; border-radius: 10px; padding: 9px; font-weight: 800; font-size: .8rem; cursor: pointer; }
+        .cal-picker-go:hover { background: var(--corp-blue-light); }
+        .cal-legend-item { display: flex; align-items: center; gap: 8px; font-size: .72rem; font-weight: 700; color: #475569; padding: 5px 2px; }
+        .cal-legend-swatch { width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .5rem; color: #fff; flex-shrink: 0; }
+
+        .cal-weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 6px; }
+        .cal-weekday { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; }
+        .cal-weekday.is-sun { color: #dc2626; }
+        .cal-weekday.is-sat { color: var(--corp-blue-light); }
+
+        #cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .cal-day {
+            position: relative; border-radius: 14px; background: linear-gradient(180deg,#fff 0%,#f8fbff 100%);
+            border: 1px solid #e8edf5; min-height: 56px; padding: 5px; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start; transition: all .2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+        }
+        .cal-day.cal-has-events { cursor: pointer; }
+        .cal-day.cal-has-events:hover { border-color: var(--corp-blue-light); box-shadow: 0 10px 20px -12px rgba(0,28,84,.25); transform: translateY(-2px); z-index: 2; }
+        .cal-day.cal-empty-day { cursor: default; }
+        .cal-day.cal-outside { background: transparent; border-color: transparent; opacity: .3; cursor: default; box-shadow: none; }
+        .cal-day.cal-outside:hover { border-color: transparent; box-shadow: none; transform: none; }
+        .cal-day.cal-today { border-color: var(--corp-blue); border-width: 1.5px; background: linear-gradient(180deg,#f8fbff 0%,#ecf3ff 100%); }
+        .cal-day.cal-today .cal-day-num { background: var(--corp-blue); color: #fff; box-shadow: 0 2px 6px rgba(0,28,84,.35); }
+        .cal-day.cal-selected { border-color: var(--corp-blue-light); box-shadow: inset 0 0 0 1px rgba(64, 97, 214, .18), 0 10px 24px -14px rgba(0,28,84,.35); background: linear-gradient(180deg,#ffffff 0%,#f4f7ff 100%); }
+        .cal-day-top { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+        .cal-day-num { font-weight: 800; font-size: .72rem; color: #334155; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; transition: all .2s; }
+        .cal-day-count { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: .56rem; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+        .cal-day:nth-child(7n+1):not(.cal-outside) .cal-day-num { color: #dc2626; }
+        .cal-day:nth-child(7n):not(.cal-outside) .cal-day-num { color: var(--corp-blue-light); }
+        .cal-day.cal-today:nth-child(7n+1) .cal-day-num,
+        .cal-day.cal-today:nth-child(7n) .cal-day-num { color: #fff; }
+
+        /* People/status dots — capped, shape-differentiated (not color-only) */
+        .cal-people { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; align-items: center; margin-top: auto; padding-top: 3px; }
+        .cal-person-dot { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .5rem; flex-shrink: 0; transition: transform .15s; }
+        .cal-person-dot:hover { transform: scale(1.25); }
+        .cal-person-approved { background: #16a34a; color: #fff; box-shadow: 0 0 0 1.5px #f0fdf4; }
+        .cal-person-pending { background: #fff; border: 2px solid #ea580c; color: #ea580c; box-shadow: 0 0 0 1.5px #fff7ed; }
+        .cal-overflow-chip { font-size: .55rem; font-weight: 800; color: #64748b; background: #eef2f7; border-radius: 50px; padding: 2px 5px; line-height: 1; flex-shrink: 0; }
+        .cal-fire { width: 14px; height: 14px; border-radius: 4px; transform: rotate(45deg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .15s; }
+        .cal-fire i { transform: rotate(-45deg); font-size: .55rem; }
+        .cal-fire:hover { transform: rotate(45deg) scale(1.25); }
+        .cal-fire-approved { background: var(--corp-red); color: #fff; }
+        .cal-fire-pending { background: #fff; border: 2px solid var(--corp-red); color: var(--corp-red); }
+
+        .cal-legend-chip {
+            padding: 4px 10px 4px 6px; border-radius: 50px; font-size: 0.68rem; font-weight: 800;
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+
+        /* Skeleton loading state for calendar grid */
+        .cal-day.cal-skel { background: linear-gradient(90deg,#f1f5f9 25%,#e9edf3 37%,#f1f5f9 63%); background-size: 400% 100%; animation: calShimmer 1.4s ease infinite; border-color: #f1f5f9; }
+        @keyframes calShimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+        @media (min-width: 1024px) {
+            #calendar-body { flex: 1 1 auto; min-height: 0; }
+            #cal-grid { flex: 1 1 auto; grid-template-rows: repeat(6, minmax(0, 1fr)); }
+            .cal-day { min-height: 0; }
+            .cal-day-num { width: 19px; height: 19px; font-size: .68rem; }
+            .cal-person-dot, .cal-fire { width: 13px; height: 13px; }
+        }
+
+        /* --- Calendar Animations --- */
+        @keyframes calCellIn {
+            from { opacity: 0; transform: translateY(4px) scale(.92); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes calSlideFromRight {
+            from { opacity: 0; transform: translateX(14px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes calSlideFromLeft {
+            from { opacity: 0; transform: translateX(-14px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes calTodayPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,28,84,.25); }
+            50%      { box-shadow: 0 0 0 4px rgba(0,28,84,0); }
+        }
+        @keyframes calDotPop {
+            0%   { transform: scale(0); opacity: 0; }
+            60%  { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #cal-month-label { display: inline-block; transition: opacity .2s ease; }
+        #cal-grid { animation: calSlideFromRight .28s ease both; }
+        #cal-grid.dir-prev { animation-name: calSlideFromLeft; }
+        .cal-day { animation: calCellIn .3s ease both; }
+        .cal-day.cal-today { animation: calCellIn .3s ease both, calTodayPulse 2.2s ease-in-out .3s infinite; }
+        .cal-people, .cal-fire { animation: calDotPop .25s ease both; }
+        .cal-day:not(.cal-outside):active { transform: scale(.95); }
+
+        /* --- Day Detail Modal (Google Calendar Day-Timeline style, ธีมเดียวกับเว็บ) --- */
+        #day-modal-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
+            opacity: 0; pointer-events: none; transition: opacity .25s ease;
+        }
+        #day-modal-overlay.open { opacity: 1; pointer-events: auto; }
+        #day-modal-box {
+            width: 100%; max-width: 480px; max-height: 88vh;
+            background: #fff; border-radius: 22px; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px -12px rgba(0,28,84,.35);
+            border-top: 5px solid var(--corp-blue);
+            transform: translateY(14px) scale(.97); transition: transform .28s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        #day-modal-overlay.open #day-modal-box { transform: translateY(0) scale(1); }
+
+        #day-modal-header {
+            padding: 16px 20px 12px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-line); flex-shrink: 0;
+        }
+        #day-modal-header .dm-title { display: flex; flex-direction: column; gap: 1px; }
+        #day-modal-header .dm-weekday { font-size: .72rem; font-weight: 800; color: var(--corp-blue-light); text-transform: uppercase; letter-spacing: .06em; }
+#day-modal-header .dm-date { font-size: 1.15rem; font-weight: 900; color: var(--corp-blue); }
+        .dm-close-btn {
+            width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; color: #64748b; cursor: pointer; transition: all .2s; flex-shrink: 0;
+        }
+        .dm-close-btn:hover { background: var(--corp-red); color: #fff; transform: rotate(90deg); }
+
+        .dm-hero {
+            padding: 12px 16px; border-bottom: 1px solid var(--border-line); background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+        .dm-hero-stats {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .dm-stat-pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+            background: #ffffff; border: 1px solid #e2e8f0; color: #475569; font-size: .68rem; font-weight: 800;
+        }
+        .dm-stat-pill strong { color: var(--corp-blue); }
+        .dm-stat-pill.status-Approved { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+        .dm-stat-pill.status-Pending { border-color: #fed7aa; background: #fff7ed; color: #9a3412; }
+        .dm-stat-pill.status-Rejected { border-color: #e2e8f0; background: #f8fafc; color: #64748b; }
+
+        /* All-day chip row (สำหรับงานที่ไม่ระบุเวลาเริ่ม-สิ้นสุด) */
+        #dm-allday-row { padding: 10px 16px 0; display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+        #dm-allday-row.hidden { display: none; }
+
+        /* Timeline scroll area */
+        #dm-timeline-wrap { position: relative; overflow-y: auto; flex: 1 1 auto; padding: 10px 4px 16px 0; }
+        #dm-timeline-wrap::-webkit-scrollbar { width: 6px; }
+        #dm-timeline-wrap::-webkit-scrollbar-thumb { background: #dbe4ff; border-radius: 10px; }
+        .dm-tz-label { position: sticky; top: 0; left: 0; font-size: .6rem; font-weight: 800; color: #cbd5e1; padding: 0 0 4px 14px; background: #fff; z-index: 3; }
+
+        #dm-timeline { position: relative; margin-left: 52px; border-left: 1px solid #eef2f7; }
+        .dm-hour-row { height: 56px; border-top: 1px solid #eef2f7; position: relative; }
+        .dm-hour-row:first-child { border-top: none; }
+        .dm-hour-label {
+            position: absolute; left: -52px; top: -7px; width: 46px; text-align: right;
+            font-size: .62rem; font-weight: 800; color: #94a3b8; background: #fff; padding-right: 6px;
+        }
+
+        .dm-now-line { position: absolute; left: 0; right: 8px; height: 0; border-top: 2px solid var(--corp-red); z-index: 4; pointer-events: none; }
+        .dm-now-dot { position: absolute; left: -5px; top: -4px; width: 9px; height: 9px; border-radius: 50%; background: var(--corp-red); }
+
+        .dm-events-col { position: absolute; top: 0; left: 6px; right: 6px; bottom: 0; }
+        .dm-event-block {
+            position: absolute; border-radius: 9px; padding: 5px 8px; overflow: hidden; cursor: pointer;
+            border: 1px solid rgba(255,255,255,.6); transition: all .18s ease; z-index: 2;
+            box-shadow: 0 2px 6px -2px rgba(0,28,84,.15);
+        }
+        .dm-event-block.mine.st-Approved { background: #dcfce7; border-left: 3px solid #16a34a; }
+        .dm-event-block.mine.st-Pending { background: #ffedd5; border-left: 3px solid #ea580c; }
+        .dm-event-block.mine.st-Rejected { background: #f1f5f9; border-left: 3px solid #94a3b8; }
+        .dm-event-block.mine:hover { filter: brightness(0.97); transform: translateY(-1px); box-shadow: 0 6px 14px -4px rgba(0,28,84,.25); z-index: 5; }
+        .dm-event-block.mine:active { transform: scale(.98); }
+
+        .dm-event-block.locked { background: #f1f5f9; border-left: 3px solid #cbd5e1; cursor: default; opacity: .85; }
+        .dm-event-block.locked:hover { background: #eef2f7; }
+
+        .dm-eb-name { font-size: .68rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dm-eb-name i.locked-icon-inline { color: #94a3b8; font-size: .8em; flex-shrink: 0; }
+        .dm-eb-time { font-size: .62rem; font-weight: 700; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dm-eb-obj { font-size: .62rem; color: #475569; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dm-eb-fire { position: absolute; top: 4px; right: 5px; color: #dc2626; font-size: .8rem; }
+
+        .dm-badge { font-size: .6rem; font-weight: 800; padding: 3px 9px; border-radius: 50px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all .15s; }
+        .dm-badge.st-Approved { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .dm-badge.st-Pending { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .dm-badge.st-Rejected { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+        .dm-badge.mine-tag { background: #eff6ff; color: #1e3a8a; }
+        .dm-badge:hover { filter: brightness(0.97); }
+        .dm-badge .locked-icon-inline { font-size: .85em; }
+
+        .dm-event-list {
+            display: grid; gap: 10px; padding: 12px 16px 16px; background: #f8fbff;
+        }
+        .dm-event-row {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 10px 12px;
+            box-shadow: 0 6px 18px -10px rgba(0,28,84,.25);
+        }
+        .dm-event-row.mine { border-left: 4px solid #2563eb; }
+        .dm-event-row.locked { border-left: 4px solid #94a3b8; }
+        .dm-event-row-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+        .dm-event-row-title { font-size: .78rem; font-weight: 900; color: #0f172a; }
+        .dm-event-row-status { font-size: .6rem; font-weight: 900; padding: 3px 9px; border-radius: 50px; }
+        .dm-event-row-meta { margin-top: 6px; font-size: .68rem; color: #64748b; font-weight: 700; }
+        .dm-event-row-objective { margin-top: 6px; font-size: .68rem; color: #475569; line-height: 1.5; }
+        .dm-event-row-btn {
+            margin-top: 8px; width: 100%; border: none; border-radius: 10px; padding: 7px 10px;
+            background: #eff6ff; color: #1d4ed8; font-size: .68rem; font-weight: 800; cursor: pointer;
+        }
+
+        .dm-empty { text-align: center; padding: 34px 10px; color: #94a3b8; }
+        .dm-empty i { font-size: 2.4rem; opacity: .5; margin-bottom: 8px; display: block; }
+        .dm-empty span { font-size: .82rem; font-weight: 700; }
+
+        .dm-toast {
+            position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+            background: #1e293b; color: #fff; font-size: .78rem; font-weight: 700;
+            padding: 10px 18px; border-radius: 50px; box-shadow: 0 10px 25px -5px rgba(0,0,0,.3);
+            z-index: 300; opacity: 0; pointer-events: none; transition: all .25s ease;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dm-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .dm-toast i { color: #fb923c; }
+
+        /* Status Badges */
+        .status-badge { 
+            padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; 
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .st-pending { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .st-approved { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .st-rejected { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* Modern Table */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0.5rem 0.5rem 0.5rem; }
+        .modern-table { border-spacing: 0 8px; border-collapse: separate; width: 100%; min-width: 800px; }
+        .modern-table th { padding: 1rem; text-transform: uppercase; font-size: 0.75rem; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+        .modern-table td { background: white; padding: 0.8rem 1rem; border-top: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; font-size: 0.9rem;}
+        .modern-table tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; border-left: 1px solid #f8fafc; }
+        .modern-table tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-right: 1px solid #f8fafc; }
+        
+        .modern-table tr:hover td { background: #f8fafc; border-color: #e2e8f0; transform: scale(1.002); }
+
+        /* Pagination Styles */
+        .page-btn {
+            width: 32px; height: 32px; display: inline-flex; justify-content: center; align-items: center;
+            border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+            background: white; border: 1px solid var(--border-line); color: var(--text-muted);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .page-btn:hover:not(:disabled) { border-color: var(--corp-blue); color: var(--corp-blue); background: #f0f4ff; }
+        .page-btn.active { background: var(--corp-blue); color: white; border-color: var(--corp-blue); box-shadow: 0 4px 10px rgba(0,28,84,0.2); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ICON BUTTONS */
+        .btn-icon-square {
+            width: 38px; height: 38px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-icon-square:hover {
+            transform: translateY(-2px);
+            border-color: var(--corp-blue-light);
+            color: var(--corp-blue-light);
+            box-shadow: 0 4px 15px rgba(42, 86, 198, 0.1);
+        }
+        .btn-icon-square i { font-size: 1.25rem; }
+        .btn-icon-square.btn-delete:hover {
+            border-color: var(--corp-red);
+            color: var(--corp-red);
+            box-shadow: 0 4px 15px rgba(217, 35, 42, 0.1);
+        }
+        .btn-icon-square.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f1f5f9;
+        }
+        /* 🌟 ปุ่มไฟล์แนบ: ไฮไลต์เมื่อมีไฟล์แนบอยู่จริง */
+        .btn-icon-square.btn-attach.has-files {
+            border-color: #c7d2fe;
+            color: var(--corp-blue-light);
+            background: #f5f7ff;
+        }
+        .btn-icon-square.btn-attach .attach-count-dot {
+            position: absolute; top: -4px; right: -4px;
+            min-width: 15px; height: 15px; padding: 0 3px;
+            background: var(--corp-blue-light); color: #fff;
+            border-radius: 999px; font-size: .55rem; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        /* Language Button */
+        .lang-btn {
+            display: flex; align-items: center; gap: 0.5rem; background: white; 
+            padding: 0.4rem 0.8rem; border-radius: 50px; border: 1px solid var(--border-line);
+        }
+
+        .loader { width: 24px; height: 24px; border: 3px solid #e2e8f0; border-top-color: var(--corp-blue); border-radius: 50%; animation: spin 1s infinite linear; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .stagger-up { opacity: 0; animation: fadeInUp 0.6s ease forwards; }
+        .delay-100 { animation-delay: 0.1s; } .delay-200 { animation-delay: 0.2s; } 
+        .delay-300 { animation-delay: 0.3s; } .delay-400 { animation-delay: 0.4s; } 
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* --- 🌟 Attachments Modal (ดูไฟล์แนบของแต่ละคำขอ) --- */
+        #attach-modal-overlay {
+            position: fixed; inset: 0; z-index: 220;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
+            opacity: 0; pointer-events: none; transition: opacity .25s ease;
+        }
+        #attach-modal-overlay.open { opacity: 1; pointer-events: auto; }
+        #attach-modal-box {
+            width: 100%; max-width: 460px; max-height: 82vh;
+            background: #fff; border-radius: 22px; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px -12px rgba(0,28,84,.35);
+            border-top: 5px solid var(--corp-blue-light);
+            transform: translateY(14px) scale(.97); transition: transform .28s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        #attach-modal-overlay.open #attach-modal-box { transform: translateY(0) scale(1); }
+        #attach-modal-header {
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-line); flex-shrink: 0;
+        }
+        #attach-modal-header .am-title { display: flex; flex-direction: column; gap: 1px; }
+        #attach-modal-header .am-eyebrow { font-size: .68rem; font-weight: 800; color: var(--corp-blue-light); text-transform: uppercase; letter-spacing: .06em; }
+        #attach-modal-header .am-refid { font-size: 1.05rem; font-weight: 900; color: var(--corp-blue); font-family: monospace; }
+        #attach-modal-body { overflow-y: auto; flex: 1 1 auto; padding: 14px 16px 18px; background: #f8fbff; }
+        #attach-modal-body::-webkit-scrollbar { width: 6px; }
+        #attach-modal-body::-webkit-scrollbar-thumb { background: #dbe4ff; border-radius: 10px; }
+
+        .am-worker-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+            box-shadow: 0 6px 16px -10px rgba(0,28,84,.2);
+        }
+        .am-worker-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .am-worker-avatar { width: 32px; height: 32px; border-radius: 10px; background: #eef2ff; color: var(--corp-blue); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: .8rem; flex-shrink: 0; }
+        .am-worker-name { font-size: .82rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+        .am-worker-meta { font-size: .68rem; color: #64748b; font-weight: 700; }
+
+        .am-file-row {
+            display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid #eef2f7;
+            border-radius: 10px; padding: 8px 10px; text-decoration: none; transition: all .15s;
+        }
+        .am-file-row:hover { border-color: var(--corp-blue-light); background: #f0f4ff; }
+        .am-file-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; color: #fff; }
+        .am-file-icon.pdf { background: #ef4444; }
+        .am-file-icon.img { background: #10b981; }
+        .am-file-icon.doc { background: #2563eb; }
+        .am-file-icon.other { background: #64748b; }
+        .am-file-name { font-size: .74rem; font-weight: 700; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .am-file-open { font-size: .65rem; font-weight: 800; color: var(--corp-blue-light); flex-shrink: 0; display: flex; align-items: center; gap: 3px; }
+
+        .am-no-file { font-size: .7rem; color: #94a3b8; font-weight: 700; font-style: italic; padding: 4px 2px; }
+
+        .am-empty { text-align: center; padding: 34px 10px; color: #94a3b8; }
+        .am-empty i { font-size: 2.4rem; opacity: .5; margin-bottom: 8px; display: block; }
+        .am-empty span { font-size: .82rem; font-weight: 700; }
+    </style>
+</head>
+<body class="min-h-screen py-4 md:py-6 lg:py-8 px-3 md:px-6 lg:px-8 relative">
+
+    <div class="bg-pattern"></div>
+
+    <!-- Navbar -->
+    <nav class="relative z-50 mx-auto w-full max-w-7xl floating-nav px-4 py-2.5 md:px-6 md:py-3 flex justify-between items-center mb-6 md:mb-8 stagger-up delay-100">
+        <div class="flex items-center gap-3">
+            <img src="{{ BRAND_LOGO_URL }}" 
+                 class="h-7 md:h-9 lg:h-10 object-contain hover:scale-105 transition-transform" 
+                 onerror="this.style.display='none'">
+            <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+            <div class="flex flex-col hidden sm:flex">
+                <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Demo Portal</span>
+                <span class="text-sm md:text-base font-extrabold text-corp-main leading-none">DEMO COMPANY SYSTEM</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleLanguage()" class="lang-btn">
+                <img id="lang-flag-img" src="https://flagcdn.com/w40/th.png" class="w-4 h-auto rounded-sm shadow-sm border border-slate-200">
+                <span id="lang-btn-text" class="font-bold text-xs">EN</span>
+            </button>
+            <div class="hidden md:block text-right">
+                <div class="text-[10px] text-slate-400 font-black uppercase">Welcome</div>
+                <div class="text-sm font-extrabold text-[#001C54]" id="user-display-name">Loading...</div>
+            </div>
+            <button onclick="handleLogout(event)" class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all shadow-sm active:scale-95">
+                <i class="ph-bold ph-power text-xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto">
+        <!--  Header  -->
+        <header class="mb-6 md:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 stagger-up delay-100">
+            <div>
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-corp-main tracking-tight" data-i18n="dash_title">Dashboard</h1>
+                <p class="text-slate-500 text-sm md:text-base mt-2 font-medium" data-i18n="dash_desc">ภาพรวมการดำเนินงานเอกสารของคุณ</p>
+            </div>
+            <div class="bg-white border border-slate-200 text-slate-400 px-4 py-2 rounded-full text-[10px] md:text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+                <i class="ph-bold ph-clock"></i> <span data-i18n="last_update">Updateล่าสุด:</span> <span id="last-update" class="text-corp-main">Now</span>
+            </div>
+        </header>
+
+        <!--  Stats + Create + Profile (คอลัมน์ซ้าย) / พื้นที่ปฏิทิน (คอลัมน์ขวา)  -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 mb-8 md:mb-10 stagger-up delay-200">
+
+            <!-- คอลัมน์ซ้าย: ทั้งหมด -> รออนุมัติ -> อนุมัติแล้ว -> สร้างเอกสารใหม่ -> โปรไฟล์ -->
+            <div class="lg:col-span-2 flex flex-col gap-3 md:gap-5">
+
+            <!-- Stats Cards สามารถกด Filter ได้ -->
+            <div class="bento-card card-stat card-blue stat-blue group hover:shadow-lg" onclick="filterByCard('')" title="ดูรายการทั้งหมด">
+                <div class="stat-label"><i class="ph-fill ph-files text-sm hidden sm:inline-block"></i> <span data-i18n="stat_all">ทั้งหมด</span></div>
+                <div class="stat-value" id="total-count">0</div>
+                <i class="ph-duotone ph-files stat-icon-bg text-blue-800"></i>
+            </div>
+            <div class="bento-card card-stat card-orange stat-orange group hover:shadow-lg" onclick="filterByCard('Pending')" title="ดูรายการรออนุมัติ">
+                <div class="stat-label"><i class="ph-fill ph-clock-countdown text-sm hidden sm:inline-block"></i> <span data-i18n="stat_pending">รออนุมัติ</span></div>
+                <div class="stat-value" id="pending-count">0</div>
+                <i class="ph-duotone ph-clock-countdown stat-icon-bg text-orange-700"></i>
+            </div>
+            <div class="bento-card card-stat card-green stat-green group hover:shadow-lg" id="stat-approved-card" onclick="filterByCard('Approved')" title="ดูรายการอนุมัติแล้ว">
+                <div class="stat-label"><i class="ph-fill ph-check-circle text-sm hidden sm:inline-block"></i> <span data-i18n="stat_approved">อนุมัติแล้ว</span></div>
+                <div class="stat-value" id="approved-count">0</div>
+                <i class="ph-duotone ph-check-circle stat-icon-bg text-green-700"></i>
+            </div>
+
+            </div>
+            <!-- /คอลัมน์ซ้าย (เหลือแค่ ทั้งหมด/รออนุมัติ/อนุมัติแล้ว) -->
+
+            <!-- คอลัมน์ขวา: ปฏิทินรายการเปิดงาน -->
+            <div class="lg:col-span-3 bento-card p-4 md:p-6" id="calendar-card">
+                <div class="flex items-center justify-between mb-3 md:mb-4 shrink-0" style="position:relative;">
+                    <button type="button" class="cal-title-btn" onclick="toggleCalPicker()">
+                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-[#f0f4ff] text-[var(--corp-blue)] flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-calendar-blank text-base md:text-xl"></i>
+                        </div>
+                        <span class="text-base md:text-xl font-black text-corp-main" id="cal-month-label">-</span>
+                        <i class="ph-bold ph-caret-down"></i>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="goToday()" class="cal-today-btn">วันนี้</button>
+                        <button onclick="changeCalMonth(-1)" class="cal-nav-btn">
+                            <i class="ph-bold ph-caret-left text-xs"></i>
+                        </button>
+                        <button onclick="changeCalMonth(1)" class="cal-nav-btn">
+                            <i class="ph-bold ph-caret-right text-xs"></i>
+                        </button>
+                        <button onclick="toggleCalLegend()" class="info-btn" id="cal-info-btn" title="คำอธิบายสัญลักษณ์">
+                            <i class="ph-bold ph-info"></i>
+                        </button>
+                    </div>
+
+                    <!-- Month/Year jump popover -->
+                    <div class="cal-picker-pop" id="cal-picker-pop">
+                        <div class="cal-picker-row">
+                            <select id="cal-pick-month"></select>
+                            <select id="cal-pick-year"></select>
+                        </div>
+                        <button class="cal-picker-go" onclick="jumpToCalPicked()">ไปยังเดือนนี้</button>
+                    </div>
+
+                    <!-- Legend popover (ย้ายจาก static row เดิม เพื่อคืนพื้นที่แนวตั้ง) -->
+                    <div class="cal-legend-pop" id="cal-legend-pop">
+                        <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#16a34a"><i class="ph-fill ph-check" style="font-size:.6rem"></i></div>อนุมัติแล้ว</div>
+                        <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#fff;border:2px solid #ea580c;color:#ea580c"><i class="ph-bold ph-clock" style="font-size:.55rem"></i></div>รออนุมัติ</div>
+                        <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--corp-red)"><i class="ph-fill ph-fire" style="font-size:.6rem"></i></div>Hotwork อนุมัติแล้ว</div>
+                        <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#fff;border:2px solid var(--corp-red);color:var(--corp-red)"><i class="ph-fill ph-fire" style="font-size:.6rem"></i></div>Hotwork รออนุมัติ</div>
+                    </div>
+                </div>
+                <div id="calendar-body">
+                    <div class="cal-weekday-row shrink-0">
+                        <div class="cal-weekday is-sun">อา</div><div class="cal-weekday">จ</div><div class="cal-weekday">อ</div><div class="cal-weekday">พ</div><div class="cal-weekday">พฤ</div><div class="cal-weekday">ศ</div><div class="cal-weekday is-sat">ส</div>
+                    </div>
+                    <div id="cal-grid"></div>
+                </div>
+            </div>
+
+            <!-- แถวล่าง: สร้างเอกสารใหม่ + โปรไฟล์ (โปรไฟล์อยู่ขวาของสร้างเอกสารใหม่) -->
+            <!-- 1. Create Request Card -->
+            <a href="index.html" class="lg:col-span-3 relative block bg-gradient-to-r from-[var(--corp-blue)] to-[var(--corp-blue-light)] rounded-[24px] p-6 md:p-8 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/4 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/4 pointer-events-none"></div>
+                <i class="ph-duotone ph-file-plus text-[120px] md:text-[160px] absolute -right-4 md:-right-6 -bottom-6 md:-bottom-8 text-white/10 -rotate-12 pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"></i>
+
+                <div class="relative z-10 flex flex-col h-full justify-center">
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        <div class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/20 text-white backdrop-blur-sm border border-white/30 shadow-inner flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-file-plus text-3xl md:text-4xl"></i>
+                        </div>
+                        <!-- Arrow indicator -->
+                        <div class="bg-white text-[var(--corp-blue)] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-md group-hover:bg-blue-50 transition-colors shrink-0">
+                            <i class="ph-bold ph-arrow-right text-lg md:text-xl group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight mb-1 drop-shadow-sm" data-i18n="create_title">สร้างเอกสารใหม่</h2>
+                        <p class="text-blue-100 text-xs md:text-sm font-medium leading-relaxed" data-i18n="create_desc">แบบฟอร์มขอเข้าพื้นที่ปฏิบัติงาน (FR-018)</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 2. User Profile Card -->
+            <div class="lg:col-span-2 bento-card p-5 md:p-7 border-t-4 border-t-[var(--corp-blue-light)] relative overflow-hidden flex flex-col justify-center bg-white shadow-md">
+                
+                <!-- เพิ่มปุ่มแก้ไข และรองรับการแสดงรูปโปรไฟล์ตรงนี้ -->
+                <div class="flex items-start justify-between gap-2 mb-5 relative z-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[var(--corp-blue-light)] to-[#4338ca] text-white flex items-center justify-center font-black text-2xl md:text-3xl shadow-md shrink-0 overflow-hidden relative">
+                            <span id="profile-initial">-</span>
+                            <img id="profile-image" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Profile Info</div>
+                            <h2 class="text-lg md:text-xl font-extrabold text-slate-800 truncate leading-tight" id="profile-fullname">Loading...</h2>
+                            <div class="text-[11px] md:text-xs font-bold text-[var(--corp-blue-light)] truncate mt-0.5" id="profile-username">-</div>
+                        </div>
+                    </div>
+                    
+                    <!-- ปุ่มกดไปหน้าดูโปรไฟล์ (เปลี่ยนไอคอนและลิงก์) -->
+                    <a href="user_profile.html" class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:text-[var(--corp-blue)] hover:border-[var(--corp-blue-light)] hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm shrink-0 group" title="ดูโปรไฟล์ส่วนตัว">
+                        <i class="ph-bold ph-user text-sm md:text-base group-hover:scale-110 transition-transform"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-slate-50 rounded-xl p-3.5 md:p-4 border border-slate-100 space-y-2.5 md:space-y-3 relative z-10 shadow-inner">
+                    <div class="flex items-center gap-3 truncate" title="Email">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><i class="ph-fill ph-envelope-simple text-sm md:text-base"></i></div>
+                        <div class="flex flex-col truncate">
+                            <span class="text-[9px] font-extrabold text-blue-500 uppercase tracking-widest leading-none mb-1" data-i18n="lbl_primary_email">อีเมลหลัก (Primary)</span>
+                            <span id="profile-email" class="text-xs md:text-sm font-bold text-slate-700 truncate leading-none">-</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 truncate pt-2 md:pt-3 border-t border-slate-200/60" title="Phone">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0"><i class="ph-fill ph-phone text-sm md:text-base"></i></div>
+                        <div class="flex flex-col truncate">
+                            <span class="text-[9px] font-extrabold text-emerald-500 uppercase tracking-widest leading-none mb-1" data-i18n="lbl_primary_phone">เบอร์โทรหลัก (Primary)</span>
+                            <span id="profile-phone" class="text-xs md:text-sm font-bold text-slate-700 truncate leading-none">-</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Background Icon Decor -->
+                <i class="ph-duotone ph-identification-badge stat-icon-bg text-[var(--corp-blue-light)] !opacity-[0.04] !-right-5 !-bottom-5 !text-7xl"></i>
+            </div>
+
+        </div>
+
+        <!-- History Table -->
+        <div class="bento-card p-0 overflow-hidden flex flex-col mb-10 stagger-up delay-400 border-l-4 border-l-corp-main border-t-0">
+            <div class="p-5 md:p-6 border-b border-slate-100 bg-white/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 relative">
+                <div class="flex items-center gap-4 shrink-0">
+                    <h3 class="font-extrabold text-base md:text-lg text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-list-dashes text-xl text-corp-main"></i>
+                        <span data-i18n="recent_title">รายการล่าสุด</span>
+                    </h3>
+                    <button onclick="loadHistory()" class="group bg-white border border-slate-200 text-slate-600 hover:text-[var(--corp-blue)] hover:border-[var(--corp-blue)] px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-95 hidden sm:flex">
+                        <i class="ph-bold ph-arrows-clockwise group-hover:animate-spin"></i>
+                    </button>
+                </div>
+                
+                <div class="flex flex-wrap w-full lg:w-auto gap-2 items-center justify-start lg:justify-end">
+                    
+                    <!-- Search Box -->
+                    <div class="relative flex-grow sm:flex-grow-0 sm:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="ph-bold ph-magnifying-glass text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-req-input" onkeyup="filterRequests()" class="w-full bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] focus:border-[var(--corp-blue-light)] block pl-10 p-2 h-10 transition-all shadow-sm" data-i18n-placeholder="ph_search_req" placeholder="ค้นหาเลข ID, งาน, พื้นที่...">
+                    </div>
+
+                    <!-- 🌟 ปุ่มตัวกรอง Dropdown สำหรับ User 🌟 -->
+                    <div class="relative">
+                        <button onclick="toggleFilterMenu()" id="btn-filter-toggle" class="bg-white border border-slate-200 text-slate-600 hover:text-[var(--corp-blue)] px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 h-10 shrink-0">
+                            <i class="ph-bold ph-funnel text-lg"></i> <span class="hidden sm:inline">ตัวกรอง</span>
+                        </button>
+
+                        <!-- เมนูตัวกรอง (ซ่อนไว้ตอนแรก) -->
+                        <div id="filter-menu" class="hidden absolute right-0 top-12 mt-1 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 origin-top-right transition-all">
+                            <div class="mb-3 border-b border-slate-100 pb-2">
+                                <h4 class="font-extrabold text-sm text-[var(--corp-blue)]"><i class="ph-fill ph-funnel"></i> ตัวกรองข้อมูล</h4>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">เลือกวันที่</label>
+                                <input type="date" id="filter-date-input" onchange="filterRequests()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] px-3 py-2 shadow-sm font-medium h-10">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">สถานะคำขอ</label>
+                                <select id="filter-status-input" onchange="filterRequests()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-2 focus:ring-[var(--corp-blue-light)] px-3 py-2 shadow-sm font-medium h-10 cursor-pointer">
+                                    <option value="">-- ทุกสถานะ --</option>
+                                    <option value="Pending">รออนุมัติ</option>
+                                    <option value="Approved">อนุมัติแล้ว</option>
+                                    <option value="Rejected">ไม่อนุมัติ</option>
+                                </select>
+                            </div>
+
+                            <button onclick="clearFilters()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-bold transition-colors mt-2">ล้างตัวกรองทั้งหมด</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive bg-white min-h-[300px]">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-24 text-center" data-i18n="th_id">Ref ID</th>
+                            <th data-i18n="th_date">วันที่ขอ</th>
+                            <th data-i18n="th_obj">รายละเอียดงาน</th>
+                            <th data-i18n="th_area">พื้นที่</th>
+                            <th class="text-center" data-i18n="th_status">สถานะ</th>
+                            <th class="text-right pr-8" data-i18n="th_action">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="text-slate-600">
+                        <tr><td colspan="6" class="p-16 text-center text-slate-400"><div class="loader mx-auto"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Container -->
+            <div class="p-4 md:p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold text-slate-500">
+                <span id="table-info" data-i18n="tbl_info">แสดงรายการล่าสุด</span>
+                <div id="pagination-controls" class="flex gap-1.5 flex-wrap justify-center">
+                    <!-- JS จะใส่ปุ่มแบ่งหน้าตรงนี้ -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🗓️ Day Detail Modal (ป็อปอัปตารางเวลารายวัน แบบ Google Calendar) -->
+    <div id="day-modal-overlay" onclick="if(event.target===this) closeDayModal()">
+        <div id="day-modal-box">
+            <div id="day-modal-header">
+                <div class="dm-title">
+                    <span class="dm-weekday" id="dm-weekday">-</span>
+                    <span class="dm-date" id="dm-date">-</span>
+                </div>
+                <div class="dm-close-btn" onclick="closeDayModal()"><i class="ph-bold ph-x"></i></div>
+            </div>
+            <div id="dm-hero" class="dm-hero"></div>
+            <div id="dm-allday-row" class="hidden"></div>
+            <div id="dm-timeline-wrap">
+                <div class="dm-tz-label" id="dm-tz-label">GMT+07</div>
+                <div id="dm-timeline"></div>
+            </div>
+        </div>
+    </div>
+    <div id="dm-toast" class="dm-toast"><i class="ph-fill ph-lock-key"></i><span id="dm-toast-text">-</span></div>
+    <div id="cal-day-toast" class="dm-toast"><i class="ph-fill ph-calendar-x"></i><span id="cal-day-toast-text">-</span></div>
+
+    <!-- 📎 Attachments Modal (ดูไฟล์แนบของผู้ปฏิบัติงานในคำขอนั้นๆ) -->
+    <div id="attach-modal-overlay" onclick="if(event.target===this) closeAttachModal()">
+        <div id="attach-modal-box">
+            <div id="attach-modal-header">
+                <div class="am-title">
+                    <span class="am-eyebrow">ไฟล์แนบของคำขอ</span>
+                    <span class="am-refid" id="am-refid">#-</span>
+                </div>
+                <div class="dm-close-btn" onclick="closeAttachModal()"><i class="ph-bold ph-x"></i></div>
+            </div>
+            <div id="attach-modal-body">
+                <div class="am-empty"><div class="loader mx-auto"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const isPreviewMode = ['blob:', 'about:', 'file:'].includes(window.location.protocol);
+
+        const translations = {
+            th: {
+                dash_title: "Dashboard", dash_desc: "ภาพรวมการดำเนินงานเอกสารของคุณ", last_update: "Updateล่าสุด:",
+                create_title: "สร้างเอกสารใหม่", create_desc: "แบบฟอร์มขอเข้าพื้นที่ปฏิบัติงาน (FR-018)", create_btn: "สร้างรายการ",
+                stat_all: "ทั้งหมด", stat_pending: "รออนุมัติ", stat_approved: "อนุมัติแล้ว", recent_title: "รายการล่าสุด",
+                th_id: "Ref ID", th_date: "วันที่ขอ", th_obj: "รายละเอียดงาน", th_area: "พื้นที่", th_status: "สถานะ", th_action: "จัดการ",
+                status_pending: "รออนุมัติ", status_approved: "อนุมัติแล้ว", status_rejected: "ไม่อนุมัติ", btn_refresh: "รีเฟรชข้อมูล",
+                no_data: "ไม่พบข้อมูลคำขอ",
+                lbl_primary_email: "อีเมลหลัก (Primary)", lbl_primary_phone: "เบอร์โทรหลัก (Primary)",
+                ph_search_req: "ค้นหาเลข ID, งาน, พื้นที่...", tbl_info: "แสดงรายการล่าสุด",
+                day_modal_no_events: "ไม่มีงานที่เปิดในวันนี้", day_modal_view_btn: "ดูรายละเอียด",
+                day_modal_locked: "ดูรายละเอียดได้เฉพาะงานของตัวเองเท่านั้น", day_modal_locked_short: "ไม่มีสิทธิ์ดู",
+                day_modal_owner_you: "งานของคุณ", day_modal_hotwork: "Hot Work",
+                cal_no_events_toast: "ไม่มีงานเปิดในวันนี้",
+                attach_no_workers: "ไม่พบข้อมูลผู้ปฏิบัติงานในคำขอนี้",
+                attach_no_file: "ไม่มีไฟล์แนบ",
+                attach_open: "เปิดไฟล์",
+                attach_load_error: "ไม่สามารถโหลดข้อมูลไฟล์แนบได้"
+            },
+            en: {
+                dash_title: "Dashboard", dash_desc: "Overview of your document operations", last_update: "Last Update:",
+                create_title: "Create New Request", create_desc: "Access Site Request Form (FR-018)", create_btn: "Start Request",
+                stat_all: "Total", stat_pending: "Pending", stat_approved: "Approved", recent_title: "Recent Requests",
+                th_id: "Ref ID", th_date: "Date", th_obj: "Work Details", th_area: "Area", th_status: "Status", th_action: "Action",
+                status_pending: "Pending", status_approved: "Approved", status_rejected: "Rejected", btn_refresh: "Refresh Data",
+                no_data: "No requests found",
+                lbl_primary_email: "Primary Email", lbl_primary_phone: "Primary Phone",
+                ph_search_req: "Search ID, task, area...", tbl_info: "Showing recent requests",
+                day_modal_no_events: "No work scheduled on this day", day_modal_view_btn: "View Details",
+                day_modal_locked: "You can only view details of your own request", day_modal_locked_short: "No access",
+                day_modal_owner_you: "Your request", day_modal_hotwork: "Hot Work",
+                cal_no_events_toast: "No work scheduled today",
+                attach_no_workers: "No worker data found for this request",
+                attach_no_file: "No file attached",
+                attach_open: "Open file",
+                attach_load_error: "Failed to load attachment data"
+            }
+        };
+
+        let currentLang = localStorage.getItem('site_lang') || 'th';
+        let globalRequests = [];
+
+        // ตัวแปรสำหรับ Pagination
+        let reqCurrentPage = 1;
+        const reqItemsPerPage = 5; 
+        let reqFilteredData = [];
+
+        function setLanguage(lang) {
+            currentLang = lang; localStorage.setItem('site_lang', lang);
+            document.getElementById('lang-btn-text').innerText = lang === 'th' ? 'EN' : 'TH';
+            document.getElementById('lang-flag-img').src = lang === 'th' ? 'https://flagcdn.com/w40/gb.png' : 'https://flagcdn.com/w40/th.png';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
+            });
+
+            if (globalRequests.length > 0) filterRequests();
+            if (typeof calDate !== 'undefined') renderCalendar();
+        }
+
+        function toggleLanguage() { setLanguage(currentLang === 'th' ? 'en' : 'th'); }
+
+        async function loadUserProfile() {
+            try {
+                if (isPreviewMode) {
+                    const mockUser = { success: true, full_name: "Demo User", username: "demo_user", email: "demo@example.com", phone: "081-999-8888", profile_pic: "" };
+                    renderUser(mockUser);
+                    return;
+                }
+                const response = await fetch('/api/user_profile');
+                const result = await response.json();
+                if (result.success) renderUser(result);
+            } catch (err) {
+                renderUser({ full_name: "นายโอ๊ต (Preview)", username: "admin_oat", email: "-", phone: "-" });
+            }
+        }
+
+        let currentUsername = null;
+
+        function renderUser(data) {
+            currentUsername = data.username || data.full_name || null;
+            const displayName = data.full_name || data.username || "User";
+            document.getElementById('user-display-name').innerText = displayName;
+            
+            const initialEl = document.getElementById('profile-initial');
+            const imgEl = document.getElementById('profile-image');
+            
+            if (initialEl && imgEl) {
+                if (data.profile_pic) {
+                    imgEl.src = data.profile_pic;
+                    imgEl.classList.remove('hidden');
+                    initialEl.classList.add('hidden');
+                } else {
+                    initialEl.innerText = displayName.charAt(0).toUpperCase();
+                    imgEl.classList.add('hidden');
+                    initialEl.classList.remove('hidden');
+                }
+            }
+            
+            const fullnameEl = document.getElementById('profile-fullname');
+            if(fullnameEl) fullnameEl.innerText = displayName;
+
+            const usernameEl = document.getElementById('profile-username');
+            if(usernameEl) usernameEl.innerText = data.username || '-';
+
+            const emailEl = document.getElementById('profile-email');
+            if(emailEl) emailEl.innerText = data.email || '-';
+
+            const phoneEl = document.getElementById('profile-phone');
+            if(phoneEl) phoneEl.innerText = data.phone || '-';
+        }
+
+        // 🌟 ระบบ Filter เมนู 🌟
+        function toggleFilterMenu() {
+            const menu = document.getElementById('filter-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-date-input').value = '';
+            document.getElementById('filter-status-input').value = '';
+            document.getElementById('search-req-input').value = '';
+            filterRequests();
+            toggleFilterMenu();
+        }
+
+        // ปิดเมนูเมื่อคลิกข้างนอก
+        document.addEventListener('click', function(event) {
+            const filterMenu = document.getElementById('filter-menu');
+            const filterToggle = document.getElementById('btn-filter-toggle');
+            if (filterMenu && filterToggle && !filterMenu.classList.contains('hidden') && !filterMenu.contains(event.target) && !filterToggle.contains(event.target)) {
+                filterMenu.classList.add('hidden');
+            }
+
+            // ปิด popover ปฏิทิน (เลือกเดือน/ปี และ legend) เมื่อคลิกข้างนอก
+            const pickerPop = document.getElementById('cal-picker-pop');
+            const legendPop = document.getElementById('cal-legend-pop');
+            if (pickerPop && pickerPop.classList.contains('show') && !event.target.closest('.cal-title-btn') && !event.target.closest('#cal-picker-pop')) {
+                closeCalPicker();
+            }
+            if (legendPop && legendPop.classList.contains('show') && !event.target.closest('#cal-info-btn') && !event.target.closest('#cal-legend-pop')) {
+                closeCalLegend();
+            }
+        });
+
+        // ฟังก์ชัน Filter จากคลิกการ์ดสถิติด้านบน
+        function filterByCard(status) {
+            if(document.getElementById('filter-status-input')) {
+                document.getElementById('filter-status-input').value = status;
+                document.getElementById('filter-date-input').value = '';
+                document.getElementById('search-req-input').value = '';
+                filterRequests();
+                document.getElementById('table-info').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // 🌟 ระบบ Pagination & Filters 🌟
+        function filterRequests() {
+            const query = document.getElementById('search-req-input').value.toLowerCase();
+            const dateFilter = document.getElementById('filter-date-input') ? document.getElementById('filter-date-input').value : ''; 
+            const statusFilter = document.getElementById('filter-status-input') ? document.getElementById('filter-status-input').value : '';
+
+            reqFilteredData = globalRequests.filter(r => {
+                const id = (r.id || '').toLowerCase();
+                const obj = (r.objective || '').toLowerCase();
+                const areas = (r.areas || '').toLowerCase();
+                const status = (r.status || '').toLowerCase();
+                
+                const matchSearch = id.includes(query) || obj.includes(query) || areas.includes(query) || status.includes(query);
+                const matchDate = dateFilter ? r.req_date === dateFilter : true;
+                const matchStatus = statusFilter ? r.status === statusFilter : true;
+
+                return matchSearch && matchDate && matchStatus;
+            });
+            
+            reqCurrentPage = 1;
+            renderPaginatedTable();
+        }
+
+        function renderPaginatedTable() {
+            const start = (reqCurrentPage - 1) * reqItemsPerPage;
+            const end = start + reqItemsPerPage;
+            const paginatedItems = reqFilteredData.slice(start, end);
+            
+            renderTable(paginatedItems);
+            renderPaginationControls(reqFilteredData.length);
+        }
+
+        function changePage(page) {
+            reqCurrentPage = page;
+            renderPaginatedTable();
+        }
+
+        function renderPaginationControls(totalItems) {
+            const container = document.getElementById('pagination-controls');
+            const info = document.getElementById('table-info');
+            const dict = translations[currentLang];
+            
+            if (totalItems === 0) {
+                container.innerHTML = '';
+                info.innerText = currentLang === 'th' ? 'ไม่พบข้อมูล' : 'No data found';
+                return;
+            }
+
+            const totalPages = Math.ceil(totalItems / reqItemsPerPage);
+            const startIdx = ((reqCurrentPage - 1) * reqItemsPerPage) + 1;
+            const endIdx = Math.min(reqCurrentPage * reqItemsPerPage, totalItems);
+            
+            info.innerText = currentLang === 'th' 
+                ? `แสดง ${startIdx}-${endIdx} จาก ${totalItems} รายการ` 
+                : `Showing ${startIdx}-${endIdx} of ${totalItems} items`;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<button onclick="changePage(${reqCurrentPage - 1})" class="page-btn" ${reqCurrentPage === 1 ? 'disabled' : ''}><i class="ph-bold ph-caret-left"></i></button>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button onclick="changePage(${i})" class="page-btn ${reqCurrentPage === i ? 'active' : ''}">${i}</button>`;
+            }
+            
+            html += `<button onclick="changePage(${reqCurrentPage + 1})" class="page-btn" ${reqCurrentPage === totalPages ? 'disabled' : ''}><i class="ph-bold ph-caret-right"></i></button>`;
+            
+            container.innerHTML = html;
+        }
+
+        async function loadHistory() {
+            const tbody = document.getElementById('history-table-body');
+            try {
+                if (isPreviewMode) {
+                    setTimeout(() => {
+                        globalRequests = [
+                            { id: "REQ-260401", req_date: "2026-04-01", objective: "ติดตั้ง Server ใหม่", areas: "NOC Room", status: "Approved" },
+                            { id: "REQ-260328", req_date: "2026-03-28", objective: "บำรุงรักษาเครื่องสำรองไฟ", areas: "UPS Room", status: "Pending" },
+                            { id: "REQ-260325", req_date: "2026-03-25", objective: "ลากสาย LAN ชั้น 2", areas: "Floor 2", status: "Approved" },
+                            { id: "REQ-260320", req_date: "2026-03-20", objective: "เปลี่ยนอุปกรณ์ Switch", areas: "Data Center", status: "Rejected" },
+                            { id: "REQ-260315", req_date: "2026-03-15", objective: "PM ประจำปี", areas: "All Areas", status: "Approved" },
+                            { id: "REQ-260310", req_date: "2026-03-10", objective: "ทดสอบระบบ", areas: "NOC Room", status: "Pending" }
+                        ];
+                        updateStats(globalRequests); // ย้ายมาตรงนี้เพื่อนับสถิติทั้งหมดก่อน filter
+                        filterRequests();
+                    }, 800);
+                    return;
+                }
+                
+                const response = await fetch('/api/my_requests');
+                const result = await response.json();
+                
+                if (result.success) { 
+                    globalRequests = result.data; 
+                    updateStats(globalRequests); // ย้ายมาตรงนี้เพื่อนับสถิติทั้งหมดก่อน filter
+                    filterRequests(); 
+                } else {
+                    console.error("API Error:", result.message);
+                    globalRequests = [];
+                    updateStats(globalRequests);
+                    filterRequests(); 
+                }
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                globalRequests = [];
+                updateStats(globalRequests);
+                filterRequests(); 
+            }
+        }
+
+        function renderTable(requests) {
+            const tbody = document.getElementById('history-table-body');
+            const dict = translations[currentLang];
+            if (!requests || requests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-16 text-center text-slate-400 font-bold">${dict.no_data}</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = requests.map(item => {
+                let badge = `<span class="status-badge st-pending"><div class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div> ${dict.status_pending}</span>`;
+                if (item.status === 'Approved') badge = `<span class="status-badge st-approved"><i class="ph-fill ph-check-circle"></i> ${dict.status_approved}</span>`;
+                else if (item.status === 'Rejected') badge = `<span class="status-badge st-rejected"><i class="ph-fill ph-x-circle"></i> ${dict.status_rejected}</span>`;
+
+                const isApproved = item.status === 'Approved';
+                const safeId = (item.id || '').replace(/'/g, "\\'");
+                
+                return `
+                <tr class="group hover:bg-slate-50 transition-colors">
+                    <td class="pl-4 md:pl-6 font-mono font-black text-[#001C54] text-center text-xs md:text-sm">#${item.id}</td>
+                    <td class="text-slate-500 font-bold whitespace-nowrap text-xs md:text-sm">${item.req_date || '-'}</td>
+                    <td class="font-extrabold text-slate-800 text-xs md:text-sm">${item.objective}</td>
+                    <td class="text-slate-500 font-medium text-xs md:text-sm">${item.areas}</td>
+                    <td class="text-center">${badge}</td>
+                    <td class="text-right pr-4 md:pr-8">
+                        <div class="flex justify-end gap-3">
+                            <a href="view.html?id=${item.id}" class="btn-icon-square" title="View">
+                                <i class="ph-bold ph-magnifying-glass"></i>
+                            </a>
+                            <button onclick="openAttachModal('${safeId}')" class="btn-icon-square btn-attach relative" title="ไฟล์แนบ">
+                                <i class="ph-bold ph-paperclip"></i>
+                            </button>
+                            <a href="download.html?id=${item.id}" class="btn-icon-square ${isApproved ? '' : 'disabled'}" title="Download PDF">
+                                <i class="ph-bold ph-download-simple"></i>
+                            </a>
+                            <button onclick="handleDelete('${item.id}')" class="btn-icon-square btn-delete" title="Delete">
+                                <i class="ph-bold ph-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateStats(req) {
+            const t = req.length, p = req.filter(r=>r.status==='Pending').length, a = req.filter(r=>r.status==='Approved').length;
+            animateValue(document.getElementById('total-count'), 0, t, 1000);
+            animateValue(document.getElementById('pending-count'), 0, p, 1000);
+            animateValue(document.getElementById('approved-count'), 0, a, 1000);
+            const now = new Date();
+            document.getElementById('last-update').innerText = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        }
+
+        async function handleDelete(id) {
+            if (!confirm(`คุณต้องการลบรายการ #${id} หรือไม่?`)) return;
+            try {
+                if (isPreviewMode) { 
+                    globalRequests = globalRequests.filter(r => r.id !== id); 
+                    updateStats(globalRequests);
+                    filterRequests(); 
+                    return; 
+                }
+                const response = await fetch('/delete_data', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                if ((await response.json()).success) loadHistory();
+            } catch (e) { console.error(e); }
+        }
+
+        /* ================= 📎 Attachments Modal ================= */
+
+        // เดาไอคอน/สีตามนามสกุลไฟล์
+        function attachFileMeta(path) {
+            const ext = (path.split('.').pop() || '').toLowerCase();
+            if (ext === 'pdf') return { cls: 'pdf', icon: 'ph-fill ph-file-pdf' };
+            if (['jpg','jpeg','png','gif','webp'].includes(ext)) return { cls: 'img', icon: 'ph-fill ph-image' };
+            if (['doc','docx'].includes(ext)) return { cls: 'doc', icon: 'ph-fill ph-file-doc' };
+            return { cls: 'other', icon: 'ph-fill ph-file' };
+        }
+
+        function attachFileName(path) {
+            try { return decodeURIComponent(path.split('/').pop()); } catch (e) { return path.split('/').pop(); }
+        }
+
+        async function openAttachModal(id) {
+            const overlay = document.getElementById('attach-modal-overlay');
+            const body = document.getElementById('attach-modal-body');
+            const dict = translations[currentLang];
+
+            document.getElementById('am-refid').innerText = `#${id}`;
+            body.innerHTML = `<div class="am-empty"><div class="loader mx-auto"></div></div>`;
+            overlay.classList.add('open');
+
+            try {
+                let workers = [];
+
+                if (isPreviewMode) {
+                    // ข้อมูลตัวอย่างไว้ดูตอน Preview เท่านั้น
+                    await new Promise(r => setTimeout(r, 400));
+                    workers = [
+                        { name: 'นายทดสอบ ระบบดี', phone: '081-234-5678', pos: 'ช่างเทคนิค', attachment: '/static/uploads/worker_attachments/sample_id_card.pdf' },
+                        { name: 'นายสมชาย ใจดี', phone: '089-111-2222', pos: 'วิศวกร', attachment: '' }
+                    ];
+                } else {
+                    const res = await fetch(`/get_data?id=${encodeURIComponent(id)}`);
+                    const result = await res.json();
+                    if (!result.success || !result.data) throw new Error(result.message || 'load failed');
+                    workers = Array.isArray(result.data.workers) ? result.data.workers : [];
+                }
+
+                renderAttachModalBody(workers);
+            } catch (err) {
+                console.error('Attachment load error:', err);
+                body.innerHTML = `<div class="am-empty"><i class="ph-duotone ph-warning-circle"></i><span>${dict.attach_load_error}</span></div>`;
+            }
+        }
+
+        function renderAttachModalBody(workers) {
+            const body = document.getElementById('attach-modal-body');
+            const dict = translations[currentLang];
+
+            if (!workers || workers.length === 0) {
+                body.innerHTML = `<div class="am-empty"><i class="ph-duotone ph-users-three"></i><span>${dict.attach_no_workers}</span></div>`;
+                return;
+            }
+
+            body.innerHTML = workers.map((w, idx) => {
+                const initial = (w.name || '?').trim().charAt(0).toUpperCase();
+                const metaParts = [w.pos, w.phone].filter(Boolean).join(' • ');
+                let fileHtml;
+                if (w.attachment) {
+                    const meta = attachFileMeta(w.attachment);
+                    const fname = attachFileName(w.attachment);
+                    fileHtml = `
+                        <a href="${w.attachment}" target="_blank" rel="noopener" class="am-file-row">
+                            <div class="am-file-icon ${meta.cls}"><i class="${meta.icon}"></i></div>
+                            <span class="am-file-name" title="${fname}">${fname}</span>
+                            <span class="am-file-open">${dict.attach_open} <i class="ph-bold ph-arrow-square-out"></i></span>
+                        </a>`;
+                } else {
+                    fileHtml = `<div class="am-no-file"><i class="ph-bold ph-x-circle"></i> ${dict.attach_no_file}</div>`;
+                }
+
+                return `
+                    <div class="am-worker-card">
+                        <div class="am-worker-head">
+                            <div class="am-worker-avatar">${initial}</div>
+                            <div class="min-w-0">
+                                <div class="am-worker-name truncate">${w.name || '-'}</div>
+                                ${metaParts ? `<div class="am-worker-meta truncate">${metaParts}</div>` : ''}
+                            </div>
+                        </div>
+                        ${fileHtml}
+                    </div>`;
+            }).join('');
+        }
+
+        function closeAttachModal() {
+            document.getElementById('attach-modal-overlay').classList.remove('open');
+        }
+
+        /* ================= Calendar Widget ================= */
+        const thMonths = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+        const enMonths = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const thWeekdaysFull = ["วันอาทิตย์","วันจันทร์","วันอังคาร","วันพุธ","วันพฤหัสบดี","วันศุกร์","วันเสาร์"];
+        const enWeekdaysFull = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        let calDate = new Date();
+        let calEvents = {}; // { 'YYYY-MM-DD': [{ id, name, status:'Approved'|'Pending'|'Rejected', hotwork:bool, mine:bool, objective, areas, req_date }] }
+        let calDirection = 'next';
+        let calIsLoading = false;
+        let selectedDateStr = null;
+
+        function changeCalMonth(delta) {
+            calDirection = delta < 0 ? 'prev' : 'next';
+            calDate.setMonth(calDate.getMonth() + delta);
+            loadCalendarEvents();
+        }
+
+        function goToday() {
+            const now = new Date();
+            calDirection = calDate > now ? 'prev' : 'next';
+            calDate = now;
+            loadCalendarEvents();
+        }
+
+        /* ---- Month/Year jump popover ---- */
+        function toggleCalPicker() {
+            closeCalLegend();
+            const pop = document.getElementById('cal-picker-pop');
+            if (pop.classList.contains('show')) { closeCalPicker(); return; }
+
+            const mSel = document.getElementById('cal-pick-month');
+            const ySel = document.getElementById('cal-pick-year');
+            const monthArr = currentLang === 'th' ? thMonths : enMonths;
+            mSel.innerHTML = monthArr.map((mName, i) => `<option value="${i}" ${i === calDate.getMonth() ? 'selected' : ''}>${mName}</option>`).join('');
+            const curY = calDate.getFullYear();
+            let yOpts = '';
+            for (let y = curY - 5; y <= curY + 5; y++) {
+                const label = currentLang === 'th' ? y + 543 : y;
+                yOpts += `<option value="${y}" ${y === curY ? 'selected' : ''}>${label}</option>`;
+            }
+            ySel.innerHTML = yOpts;
+
+            pop.classList.add('show');
+            requestAnimationFrame(() => pop.classList.add('anim'));
+        }
+        function closeCalPicker() {
+            const pop = document.getElementById('cal-picker-pop');
+            pop.classList.remove('anim');
+            setTimeout(() => pop.classList.remove('show'), 160);
+        }
+        function jumpToCalPicked() {
+            const m = parseInt(document.getElementById('cal-pick-month').value, 10);
+            const y = parseInt(document.getElementById('cal-pick-year').value, 10);
+            calDirection = new Date(y, m, 1) < calDate ? 'prev' : 'next';
+            calDate = new Date(y, m, 1);
+            closeCalPicker();
+            loadCalendarEvents();
+        }
+
+        /* ---- Legend popover ---- */
+        function toggleCalLegend() {
+            closeCalPicker();
+            const pop = document.getElementById('cal-legend-pop');
+            const btn = document.getElementById('cal-info-btn');
+            if (pop.classList.contains('show')) { closeCalLegend(); return; }
+            pop.classList.add('show');
+            btn.classList.add('open');
+            requestAnimationFrame(() => pop.classList.add('anim'));
+        }
+        function closeCalLegend() {
+            const pop = document.getElementById('cal-legend-pop');
+            const btn = document.getElementById('cal-info-btn');
+            pop.classList.remove('anim');
+            btn.classList.remove('open');
+            setTimeout(() => pop.classList.remove('show'), 160);
+        }
+
+        async function loadCalendarEvents() {
+            const y = calDate.getFullYear(), m = calDate.getMonth();
+            renderCalendarSkeleton();
+            if (isPreviewMode) {
+                const mm = String(m + 1).padStart(2, '0');
+                calEvents = {
+                    [`${y}-${mm}-12`]: [
+                        { id: 'REQ-260712', name: 'Demo User', username: 'demo_user', status: 'Pending', hotwork: false, objective: 'Review access request', areas: 'Floor 3', req_date: `${y}-${mm}-12`, start_time: '09:00', end_time: '10:30' },
+                        { id: 'REQ-260711', name: 'สมหญิง ใจดี', username: 'Somying_J', status: 'Approved', hotwork: true, objective: 'เชื่อมสาย Fiber ห้อง Data Center', areas: 'Data Center', req_date: `${y}-${mm}-12`, start_time: '14:00', end_time: '16:00' }
+                    ],
+                    [`${y}-${mm}-16`]: [
+                        { id: 'REQ-260716', name: 'สมชาย รักงาน', username: 'Somchai_R', status: 'Pending', hotwork: false, objective: 'บำรุงรักษาเครื่องสำรองไฟ', areas: 'UPS Room', req_date: `${y}-${mm}-16`, start_time: '10:00', end_time: '11:00' }
+                    ],
+                    [`${y}-${mm}-17`]: [
+                        { id: 'REQ-260717', name: 'สมหญิง ใจดี', username: 'Somying_J', status: 'Approved', hotwork: true, objective: 'เชื่อมโยงระบบไฟฟ้าสำรอง', areas: 'Generator Room', req_date: `${y}-${mm}-17`, start_time: '09:00', end_time: '12:00' },
+                        { id: 'REQ-260718', name: 'วิชัย มั่นคง', username: 'Wichai_M', status: 'Pending', hotwork: true, objective: 'เจาะผนังติดตั้งท่อร้อยสาย', areas: 'Floor 2', req_date: `${y}-${mm}-17`, start_time: '09:30', end_time: '11:00' },
+                        { id: 'REQ-260719', name: 'อารีย์ พูนสิน', username: 'Aree_P', status: 'Approved', hotwork: false, objective: 'ตรวจรับงานติดตั้งกล้อง CCTV', areas: 'Lobby', req_date: `${y}-${mm}-17`, start_time: '13:00', end_time: '13:45' }
+                    ],
+                };
+                setTimeout(renderCalendar, 350); // จำลอง latency เล็กน้อยให้เห็น skeleton
+                return;
+            }
+            try {
+                const res = await fetch(`/api/calendar_events?year=${y}&month=${m + 1}`);
+                const result = await res.json();
+                calEvents = (result && result.success) ? result.data : {};
+            } catch (e) {
+                console.error('Calendar fetch error:', e);
+                calEvents = {};
+            }
+            renderCalendar();
+        }
+
+        // ตรวจสอบว่ารายการนี้เป็นของผู้ใช้ที่ล็อกอินอยู่หรือไม่ (รองรับทั้งกรณี backend ส่ง mine มาให้ตรงๆ และกรณีต้องเทียบ username เอง)
+        function isMyEvent(ev) {
+            if (typeof ev.mine === 'boolean') return ev.mine;
+            if (!currentUsername) return false;
+            if (ev.username) return ev.username === currentUsername;
+            return ev.name === currentUsername;
+        }
+
+        // Skeleton placeholder ระหว่างรอ fetch (กันความรู้สึกกระตุกเวลา API ช้า) — ใช้ 42 cells เสมอให้ตรงกับ renderCalendar (แก้บั๊ก: เดิมใช้จำนวน cell ไม่คงที่ ทำให้ความสูง/จำนวนคอลัมน์กระตุกตอนสลับ skeleton→ข้อมูลจริง)
+        function renderCalendarSkeleton() {
+            calIsLoading = true;
+            const y = calDate.getFullYear(), m = calDate.getMonth();
+            const monthArr = currentLang === 'th' ? thMonths : enMonths;
+            document.getElementById('cal-month-label').innerText = `${monthArr[m]} ${currentLang === 'th' ? y + 543 : y}`;
+
+            const grid = document.getElementById('cal-grid');
+            grid.classList.remove('dir-prev');
+            let html = '';
+            for (let i = 0; i < 42; i++) {
+                html += `<div class="cal-day cal-skel" style="animation-delay:${(i % 7) * 40}ms"></div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function renderCalendar() {
+            calIsLoading = false;
+            const y = calDate.getFullYear(), m = calDate.getMonth();
+            const monthArr = currentLang === 'th' ? thMonths : enMonths;
+            document.getElementById('cal-month-label').innerText = `${monthArr[m]} ${currentLang === 'th' ? y + 543 : y}`;
+
+            const startOffset = new Date(y, m, 1).getDay();      // 0=อาทิตย์
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const daysInPrevMonth = new Date(y, m, 0).getDate();
+            const todayStr = new Date().toISOString().slice(0, 10);
+
+            let cells = [];
+            for (let i = startOffset; i > 0; i--) cells.push({ day: daysInPrevMonth - i + 1, outside: true, dateStr: null });
+            for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, outside: false, dateStr: `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` });
+            let nextDay = 1;
+            while (cells.length < 42) cells.push({ day: nextDay++, outside: true, dateStr: null });
+
+            const grid = document.getElementById('cal-grid');
+            grid.classList.remove('dir-prev');
+            void grid.offsetWidth; // reflow เพื่อ restart animation ทุกครั้ง
+            if (calDirection === 'prev') grid.classList.add('dir-prev');
+
+            grid.innerHTML = cells.map((c, idx) => {
+                const events = c.dateStr ? (calEvents[c.dateStr] || []) : [];
+                const hasEvent = events.length > 0;
+                let cls = 'cal-day';
+                if (c.outside) cls += ' cal-outside';
+                else if (hasEvent) cls += ' cal-has-events';
+                else cls += ' cal-empty-day';
+                if (c.dateStr === todayStr) cls += ' cal-today';
+                if (c.dateStr && c.dateStr === selectedDateStr) cls += ' cal-selected';
+
+                let peopleHtml = '';
+                if (hasEvent) {
+                    const shown = events.slice(0, 3);
+                    const overflow = events.length - shown.length;
+
+                    const dots = shown.map(ev => {
+                        const isApproved = ev.status === 'Approved';
+                        const cls2 = isApproved ? 'cal-person-approved' : 'cal-person-pending';
+                        const icon = isApproved ? 'ph-fill ph-check' : 'ph-bold ph-clock';
+                        const hotworkNote = ev.hotwork ? ' • Hotwork' : '';
+                        return `<div class="cal-person-dot ${cls2}" title="${ev.name || ''} (${ev.status})${hotworkNote}"><i class="${icon}"></i></div>`;
+                    }).join('');
+
+                    const extra = overflow > 0 ? `<div class="cal-overflow-chip">+${overflow}</div>` : '';
+
+                    let fireHtml = '';
+                    const hasFireApproved = events.some(ev => ev.hotwork && ev.status === 'Approved');
+                    const hasFirePending = events.some(ev => ev.hotwork && ev.status !== 'Approved');
+                    if (hasFireApproved) fireHtml += `<div class="cal-fire cal-fire-approved" title="Hotwork อนุมัติแล้ว"><i class="ph-fill ph-fire"></i></div>`;
+                    if (hasFirePending) fireHtml += `<div class="cal-fire cal-fire-pending" title="Hotwork รออนุมัติ"><i class="ph-fill ph-fire"></i></div>`;
+
+                    peopleHtml = `<div class="cal-people">${dots}${extra}${fireHtml}</div>`;
+                }
+
+                const delay = (idx % 7) * 18;
+                const dayTitle = hasEvent ? `${events.length} รายการเปิดงาน` : '';
+                const countPill = hasEvent ? `<span class="cal-day-count">${events.length}</span>` : '';
+                return `<div class="${cls}" style="animation-delay:${delay}ms" title="${dayTitle}" ${c.dateStr ? `onclick="onCalDayClick('${c.dateStr}', ${hasEvent})"` : ''}>
+                    <div class="cal-day-top">
+                        <div class="cal-day-num">${c.day}</div>
+                        ${countPill}
+                    </div>
+                    ${peopleHtml}
+                </div>`;
+            }).join('');
+            requestAnimationFrame(syncCalendarHeight);
+        }
+
+        function syncCalendarHeight() {
+            const calCard = document.getElementById('calendar-card');
+            const approvedCard = document.getElementById('stat-approved-card');
+            if (!calCard || !approvedCard) return;
+            if (window.innerWidth >= 1024) {
+                const target = approvedCard.getBoundingClientRect().bottom - calCard.getBoundingClientRect().top;
+                calCard.style.height = target + 'px';
+            } else {
+                calCard.style.height = '';
+            }
+        }
+        window.addEventListener('resize', syncCalendarHeight);
+
+        const DM_HOUR_HEIGHT = 56; // px ต่อ 1 ชั่วโมง
+
+        function dmParseMinutes(t) {
+            if (!t) return null;
+            const [h, mi] = t.split(':').map(Number);
+            return h * 60 + (mi || 0);
+        }
+
+        function dmFormatHourLabel(h) {
+            const period = h < 12 ? 'AM' : 'PM';
+            let h12 = h % 12; if (h12 === 0) h12 = 12;
+            return `${h12} ${period}`;
+        }
+
+        function dmFormatTime(t) {
+            const mins = dmParseMinutes(t);
+            if (mins === null) return '';
+            const h = Math.floor(mins / 60), mi = mins % 60;
+            const period = h < 12 ? 'AM' : 'PM';
+            let h12 = h % 12; if (h12 === 0) h12 = 12;
+            return `${h12}:${String(mi).padStart(2, '0')} ${period}`;
+        }
+
+        // จัดวางตำแหน่งซ้อนทับกันของ event ในคอลัมน์เดียว (แบบ Google Calendar) ด้วยการจัดกลุ่มที่ทับเวลากันแล้วแบ่งความกว้างเท่าๆ กัน
+        function dmLayoutEvents(timedEvents) {
+            const items = timedEvents.map(ev => ({
+                ev,
+                start: dmParseMinutes(ev.start_time),
+                end: Math.max(dmParseMinutes(ev.end_time) || (dmParseMinutes(ev.start_time) + 60), dmParseMinutes(ev.start_time) + 20)
+            })).sort((a, b) => a.start - b.start);
+
+            const clusters = [];
+            let current = [];
+            let clusterEnd = -Infinity;
+            items.forEach(it => {
+                if (current.length === 0 || it.start < clusterEnd) {
+                    current.push(it);
+                    clusterEnd = Math.max(clusterEnd, it.end);
+                } else {
+                    clusters.push(current);
+                    current = [it];
+                    clusterEnd = it.end;
+                }
+            });
+            if (current.length) clusters.push(current);
+
+            const positioned = [];
+            clusters.forEach(cluster => {
+                const columns = []; // แต่ละ column เก็บเวลา end ล่าสุด
+                cluster.forEach(it => {
+                    let colIdx = columns.findIndex(endTime => it.start >= endTime);
+                    if (colIdx === -1) { colIdx = columns.length; columns.push(it.end); }
+                    else { columns[colIdx] = it.end; }
+                    it.col = colIdx;
+                });
+                const totalCols = columns.length;
+                cluster.forEach(it => positioned.push({ ...it, totalCols }));
+            });
+            return positioned;
+        }
+
+        // แตะวันที่ไม่มีงาน -> toast สั้นๆ แทนการเปิด modal เต็มจอเปล่าๆ (ลด friction)
+        function onCalDayClick(dateStr, hasEvent) {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            if (!hasEvent) {
+                showCalDayToast(translations[currentLang].cal_no_events_toast);
+                return;
+            }
+            openDayModal(dateStr);
+        }
+
+        let calDayToastTimer = null;
+        function showCalDayToast(msg) {
+            const toast = document.getElementById('cal-day-toast');
+            document.getElementById('cal-day-toast-text').innerText = msg;
+            toast.classList.add('show');
+            clearTimeout(calDayToastTimer);
+            calDayToastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        function openDayModal(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            const dict = translations[currentLang];
+            const events = calEvents[dateStr] || [];
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dObj = new Date(y, m - 1, d);
+            const weekdayArr = currentLang === 'th' ? thWeekdaysFull : enWeekdaysFull;
+            const monthArr = currentLang === 'th' ? thMonths : enMonths;
+            const todayStr = new Date().toISOString().slice(0, 10);
+
+            document.getElementById('dm-weekday').innerText = weekdayArr[dObj.getDay()];
+            document.getElementById('dm-date').innerText = currentLang === 'th'
+                ? `${d} ${monthArr[m - 1]} ${y}`
+                : `${monthArr[m - 1]} ${d}, ${y}`;
+
+            const timedEvents = events.filter(ev => ev.start_time);
+            const allDayEvents = events.filter(ev => !ev.start_time);
+
+            // --- สรุปวัน / ตัวชี้สถานะ ---
+            const statusCounts = events.reduce((acc, ev) => {
+                acc[ev.status] = (acc[ev.status] || 0) + 1;
+                return acc;
+            }, {});
+            const statusPills = Object.entries(statusCounts).map(([status, count]) =>
+                `<span class="dm-stat-pill status-${status}"><strong>${count}</strong> ${translations[currentLang][`status_${status.toLowerCase()}`] || status}</span>`
+            ).join('');
+            document.getElementById('day-modal-header').innerHTML = `
+                <div class="dm-title">
+                    <span class="dm-weekday" id="dm-weekday">${weekdayArr[dObj.getDay()]}</span>
+                    <span class="dm-date" id="dm-date">${currentLang === 'th' ? `${d} ${monthArr[m - 1]} ${y}` : `${monthArr[m - 1]} ${d}, ${y}`}</span>
+                </div>
+                <div class="dm-close-btn" onclick="closeDayModal()"><i class="ph-bold ph-x"></i></div>
+            `;
+
+            const hero = document.getElementById('dm-hero');
+            hero.innerHTML = `
+                <div class="dm-hero-stats">${statusPills || '<span class="dm-stat-pill"><strong>0</strong> งาน</span>'}</div>
+                <div class="dm-stat-pill"><strong>${events.length}</strong> รายการ</div>
+            `;
+
+            // --- แถวงานตลอดวัน (ไม่มีเวลาระบุ) ---
+            const alldayRow = document.getElementById('dm-allday-row');
+            if (allDayEvents.length === 0) {
+                alldayRow.classList.add('hidden');
+                alldayRow.innerHTML = '';
+            } else {
+                alldayRow.classList.remove('hidden');
+                alldayRow.innerHTML = allDayEvents.map(ev => {
+                    const mine = isMyEvent(ev);
+                    const safeId = (ev.id || '').replace(/'/g, "\\'");
+                    return `<span class="dm-badge st-${ev.status}" onclick="${mine ? `openEventDetail('${safeId}')` : 'showDmToast()'}">
+                        ${mine ? '' : '<i class="ph-bold ph-lock-simple locked-icon-inline"></i>'}${ev.name || '-'}
+                    </span>`;
+                }).join('');
+            }
+
+            // --- ไทม์ไลน์รายชั่วโมง ---
+            const timeline = document.getElementById('dm-timeline');
+            const totalHeight = 24 * DM_HOUR_HEIGHT;
+            let hoursHtml = '';
+            for (let h = 0; h < 24; h++) {
+                hoursHtml += `<div class="dm-hour-row"><span class="dm-hour-label">${dmFormatHourLabel(h)}</span></div>`;
+            }
+
+            const eventListHtml = events.map(ev => {
+                const mine = isMyEvent(ev);
+                const safeId = (ev.id || '').replace(/'/g, "\\'");
+                const timeLabel = ev.start_time || ev.end_time ? `${ev.start_time || ''}${ev.end_time ? ' - ' + ev.end_time : ''}` : 'All day';
+                return `
+                    <div class="dm-event-row ${mine ? 'mine' : 'locked'}">
+                        <div class="dm-event-row-head">
+                            <span class="dm-event-row-title">${ev.name || '-'}</span>
+                            <span class="dm-event-row-status st-${ev.status}">${ev.status}</span>
+                        </div>
+                        <div class="dm-event-row-meta">${timeLabel}${ev.areas ? ' • ' + ev.areas : ''}</div>
+                        ${ev.objective ? `<div class="dm-event-row-objective">${ev.objective}</div>` : ''}
+                        <button class="dm-event-row-btn" onclick="${mine ? `openEventDetail('${safeId}')` : 'showDmToast()'}">${mine ? 'ดูรายละเอียด' : 'ไม่มีสิทธิ์ดู'}</button>
+                    </div>`;
+            }).join('');
+
+            let nowLineHtml = '';
+            if (dateStr === todayStr) {
+                const now = new Date();
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                const top = (nowMins / 60) * DM_HOUR_HEIGHT;
+                nowLineHtml = `<div class="dm-now-line" style="top:${top}px"><span class="dm-now-dot"></span></div>`;
+            }
+
+            let eventsHtml = '';
+            if (timedEvents.length === 0 && allDayEvents.length === 0) {
+                timeline.style.height = '';
+                document.getElementById('dm-timeline-wrap').innerHTML = `<div class="dm-empty"><i class="ph-duotone ph-calendar-x"></i><span>${dict.day_modal_no_events}</span></div>`;
+                document.getElementById('day-modal-overlay').classList.add('open');
+                return;
+            }
+
+            if (timedEvents.length > 0) {
+                const laidOut = dmLayoutEvents(timedEvents);
+                const gap = 3;
+                eventsHtml = laidOut.map(it => {
+                    const ev = it.ev;
+                    const mine = isMyEvent(ev);
+                    const top = (it.start / 60) * DM_HOUR_HEIGHT;
+                    const height = Math.max(((it.end - it.start) / 60) * DM_HOUR_HEIGHT, 26);
+                    const widthPct = 100 / it.totalCols;
+                    const leftPct = widthPct * it.col;
+                    const safeId = (ev.id || '').replace(/'/g, "\\'");
+                    const timeLabel = `${dmFormatTime(ev.start_time)}${ev.end_time ? ' – ' + dmFormatTime(ev.end_time) : ''}`;
+                    return `
+                    <div class="dm-event-block ${mine ? 'mine' : 'locked'} st-${ev.status}"
+                         style="top:${top}px; height:${height}px; left:calc(${leftPct}% + ${it.col ? gap : 0}px); width:calc(${widthPct}% - ${gap}px);"
+                         title="${ev.name || ''} · ${timeLabel}"
+                         onclick="${mine ? `openEventDetail('${safeId}')` : 'showDmToast()'}">
+                        ${ev.hotwork ? '<i class="ph-fill ph-fire dm-eb-fire"></i>' : ''}
+                        <div class="dm-eb-name">${mine ? '' : '<i class="ph-bold ph-lock-simple locked-icon-inline"></i>'}<span>${ev.name || '-'}</span></div>
+                        <div class="dm-eb-time">${timeLabel}</div>
+                        ${mine && ev.objective && height > 50 ? `<div class="dm-eb-obj">${ev.objective}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+
+            document.getElementById('dm-timeline-wrap').innerHTML = `
+                <div class="dm-tz-label" id="dm-tz-label">${dmGmtLabel()}</div>
+                <div id="dm-timeline" style="height:${totalHeight}px;">
+                    ${hoursHtml}
+                    ${nowLineHtml}
+                    <div class="dm-events-col">${eventsHtml}</div>
+                </div>
+                <div class="dm-event-list">${eventListHtml}</div>`;
+
+            document.getElementById('day-modal-overlay').classList.add('open');
+
+            // เลื่อนไปยังช่วงเวลาที่เกี่ยวข้องอัตโนมัติ (ชั่วโมงแรกของงาน หรือ 8 โมงเช้าเป็นค่าเริ่มต้น)
+            requestAnimationFrame(() => {
+                const wrap = document.getElementById('dm-timeline-wrap');
+                const firstStart = timedEvents.length ? Math.min(...timedEvents.map(ev => dmParseMinutes(ev.start_time))) : 8 * 60;
+                wrap.scrollTop = Math.max(0, (firstStart / 60 - 1) * DM_HOUR_HEIGHT);
+            });
+        }
+
+        function dmGmtLabel() {
+            const offsetMin = -new Date().getTimezoneOffset();
+            const sign = offsetMin >= 0 ? '+' : '-';
+            const hh = String(Math.floor(Math.abs(offsetMin) / 60)).padStart(2, '0');
+            return `GMT${sign}${hh}`;
+        }
+
+        function closeDayModal() {
+            document.getElementById('day-modal-overlay').classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { closeDayModal(); closeAttachModal(); }
+        });
+
+        let dmToastTimer = null;
+        function showDmToast() {
+            const dict = translations[currentLang];
+            const toast = document.getElementById('dm-toast');
+            document.getElementById('dm-toast-text').innerText = dict.day_modal_locked;
+            toast.classList.add('show');
+            clearTimeout(dmToastTimer);
+            dmToastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+        }
+
+        function openEventDetail(id) {
+            if (!id) return;
+            window.location.href = `view.html?id=${encodeURIComponent(id)}`;
+        }
+
+        function handleLogout(e) { e.preventDefault(); window.location.href = isPreviewMode ? 'login.html' : '/api/logout'; }
+        
+        function animateValue(obj, start, end, duration) {
+            if(!obj) return; let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step); else obj.innerHTML = end;
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { setLanguage(currentLang); loadUserProfile(); loadHistory(); loadCalendarEvents(); });
+        window.addEventListener('load', () => setTimeout(syncCalendarHeight, 50));
+    </script>
+</body>
+</html>
