@@ -1,3 +1,8 @@
+-- 1. สร้างฐานข้อมูล 
+CREATE DATABASE IF NOT EXISTS `cls_ska` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `cls_ska`;
+
+-- 2. ลบตารางเก่าออกก่อน 
 DROP TABLE IF EXISTS `requests`;
 DROP TABLE IF EXISTS `users`;
 
