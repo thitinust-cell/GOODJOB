@@ -621,3 +621,398 @@ if __name__ == '__main__':
     check_and_update_db()
     print("="*50 + "\n")
     app.run(host="0.0.0.0", port=5001, debug=True)
+# ==========================================
+# 📱 MOBILE API ENDPOINTS (for Kotlin App)
+# ==========================================
+
+# 📱 Mobile Login
+@app.route('/mobile/api/login', methods=['POST'])
+def mobile_login():
+    """Mobile app login endpoint"""
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return jsonify({'success': False, 'message': 'Username and password required'}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+            user = cursor.fetchone()
+            
+            if user and check_password_hash(user['password_hash'], password):
+                if user.get('status') == 'pending':
+                    return jsonify({'success': False, 'message': 'Account pending approval'}), 403
+                if user.get('status') == 'rejected':
+                    return jsonify({'success': False, 'message': 'Account rejected'}), 403
+                
+                return jsonify({
+                    'success': True,
+                    'user_id': user['id'],
+                    'username': user['username'],
+                    'full_name': user['full_name'],
+                    'email': user.get('email') or '',
+                    'phone': user.get('phone') or '',
+                    'role': user['role']
+                })
+            
+        conn.close()
+        return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+        
+    except Exception as e:
+        print(f"DB Error (Mobile Login): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Mobile Register
+@app.route('/mobile/api/register', methods=['POST'])
+def mobile_register():
+    """Mobile app registration endpoint"""
+    try:
+        data = request.json
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        full_name = data.get('full_name')
+        phone = data.get('phone', '')
+        
+        if not all([username, email, password, full_name]):
+            return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # Check if username exists
+            cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+            if cursor.fetchone():
+                return jsonify({'success': False, 'message': 'Username already exists'}), 409
+            
+            # Check if email exists
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+            if cursor.fetchone():
+                return jsonify({'success': False, 'message': 'Email already registered'}), 409
+            
+            # Create new user
+            user_id = str(uuid.uuid4())[:8]
+            hashed_pw = generate_password_hash(password)
+            
+            cursor.execute("""
+                INSERT INTO users (id, username, email, password_hash, full_name, phone, role, status, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, 'user', 'pending', NOW())
+            """, (user_id, username, email, hashed_pw, full_name, phone))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Registration successful',
+            'user_id': user_id
+        }), 201
+        
+    except Exception as e:
+        print(f"DB Error (Mobile Register): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Get All Users (for dropdown/list)
+@app.route('/mobile/api/users', methods=['GET'])
+def mobile_get_users():
+    """Get list of all users"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, username, full_name, email, phone, role, status FROM users WHERE status = 'approved'")
+            users = cursor.fetchall()
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'users': users
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Get Users): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Get User Profile
+@app.route('/mobile/api/user/<user_id>', methods=['GET'])
+def mobile_get_user(user_id):
+    """Get specific user profile"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, username, full_name, email, phone, profile_pic, role, status 
+                FROM users WHERE id = %s
+            """, (user_id,))
+            user = cursor.fetchone()
+        
+        conn.close()
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'user': user
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Get User): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Get All Requests (with filters)
+@app.route('/mobile/api/requests', methods=['GET'])
+def mobile_get_requests():
+    """Get list of requests with optional filters"""
+    try:
+        user_id = request.args.get('user_id')
+        status = request.args.get('status')
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            query = "SELECT * FROM requests WHERE is_deleted_by_user = 0"
+            params = []
+            
+            if user_id:
+                query += " AND user_id = %s"
+                params.append(user_id)
+            
+            if status:
+                query += " AND status = %s"
+                params.append(status)
+            
+            query += " ORDER BY created_at DESC LIMIT 100"
+            
+            cursor.execute(query, params)
+            requests = cursor.fetchall()
+            
+            # Format date/time fields
+            for req in requests:
+                for field in ['req_date', 'start_date', 'end_date', 'created_at']:
+                    if req.get(field) and hasattr(req[field], 'strftime'):
+                        req[field] = req[field].strftime('%Y-%m-%d')
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'requests': requests
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Get Requests): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Get Single Request Details
+@app.route('/mobile/api/requests/<request_id>', methods=['GET'])
+def mobile_get_request_detail(request_id):
+    """Get details of a single request"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM requests WHERE id = %s AND is_deleted_by_user = 0", (request_id,))
+            req = cursor.fetchone()
+        
+        conn.close()
+        
+        if not req:
+            return jsonify({'success': False, 'message': 'Request not found'}), 404
+        
+        # Format date/time fields
+        for field in ['req_date', 'start_date', 'end_date', 'created_at']:
+            if req.get(field) and hasattr(req[field], 'strftime'):
+                req[field] = req[field].strftime('%Y-%m-%d')
+        
+        # Parse JSON fields
+        if req.get('work_types'):
+            req['work_types'] = json.loads(req['work_types']) if isinstance(req['work_types'], str) else req['work_types']
+        if req.get('areas'):
+            req['areas'] = json.loads(req['areas']) if isinstance(req['areas'], str) else req['areas']
+        if req.get('workers'):
+            req['workers'] = json.loads(req['workers']) if isinstance(req['workers'], str) else req['workers']
+        
+        return jsonify({
+            'success': True,
+            'request': req
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Get Request Detail): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Create New Request (from mobile)
+@app.route('/mobile/api/requests', methods=['POST'])
+def mobile_create_request():
+    """Create a new request from mobile"""
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'user_id required'}), 400
+        
+        # Get username from user_id
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT username FROM users WHERE id = %s", (user_id,))
+            user = cursor.fetchone()
+            
+            if not user:
+                return jsonify({'success': False, 'message': 'User not found'}), 404
+            
+            username = user['username']
+            
+            # Generate request ID
+            now = datetime.now()
+            current_month_str = now.strftime('%Y%m')
+            
+            cursor.execute("SELECT id FROM requests WHERE id LIKE %s ORDER BY id DESC LIMIT 1", (f"AS{current_month_str}%",))
+            last_record = cursor.fetchone()
+            new_seq = (int(last_record['id'][-3:]) + 1) if last_record else 1
+            req_id = f"AS{now.strftime('%Y%m%d')}{new_seq:03d}"
+            
+            # Insert request
+            cursor.execute("""
+                INSERT INTO requests 
+                (id, user_id, username, req_type, req_cat, req_date, req_time, company, vendor_company, dcf, 
+                 mobile, vehicle_reg, requester_name, objective, detail_work, work_types, risk, areas, 
+                 start_date, start_time, end_date, end_time, workers, signature, status, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Pending', NOW())
+            """, (
+                req_id, user_id, username,
+                data.get('req_type', ''),
+                data.get('req_cat', ''),
+                data.get('req_date'),
+                data.get('req_time'),
+                data.get('company', ''),
+                data.get('vendor_company', ''),
+                data.get('dcf', ''),
+                data.get('mobile', ''),
+                data.get('vehicle_reg', ''),
+                data.get('requester_name', ''),
+                data.get('objective', ''),
+                data.get('detail_work', ''),
+                json.dumps(data.get('work_types', [])),
+                data.get('risk', 'No'),
+                json.dumps(data.get('areas', [])),
+                data.get('start_date'),
+                data.get('start_time'),
+                data.get('end_date'),
+                data.get('end_time'),
+                json.dumps(data.get('workers', [])),
+                data.get('signature', '')
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Request created successfully',
+            'request_id': req_id
+        }), 201
+        
+    except Exception as e:
+        print(f"DB Error (Create Request): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Update Request
+@app.route('/mobile/api/requests/<request_id>', methods=['PUT'])
+def mobile_update_request(request_id):
+    """Update an existing request"""
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # Check if user owns this request
+            cursor.execute("SELECT user_id FROM requests WHERE id = %s", (request_id,))
+            req = cursor.fetchone()
+            
+            if not req:
+                return jsonify({'success': False, 'message': 'Request not found'}), 404
+            
+            if req['user_id'] != user_id:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            
+            # Update request
+            cursor.execute("""
+                UPDATE requests 
+                SET req_type = %s, req_cat = %s, company = %s, vendor_company = %s, objective = %s, 
+                    detail_work = %s, risk = %s, start_date = %s, start_time = %s, end_date = %s, 
+                    end_time = %s, workers = %s
+                WHERE id = %s
+            """, (
+                data.get('req_type'),
+                data.get('req_cat'),
+                data.get('company'),
+                data.get('vendor_company'),
+                data.get('objective'),
+                data.get('detail_work'),
+                data.get('risk'),
+                data.get('start_date'),
+                data.get('start_time'),
+                data.get('end_date'),
+                data.get('end_time'),
+                json.dumps(data.get('workers', [])),
+                request_id
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Request updated successfully'
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Update Request): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# 📱 Delete Request (Soft delete)
+@app.route('/mobile/api/requests/<request_id>', methods=['DELETE'])
+def mobile_delete_request(request_id):
+    """Soft delete a request"""
+    try:
+        user_id = request.args.get('user_id')
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'user_id required'}), 400
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # Check if user owns this request
+            cursor.execute("SELECT user_id FROM requests WHERE id = %s", (request_id,))
+            req = cursor.fetchone()
+            
+            if not req:
+                return jsonify({'success': False, 'message': 'Request not found'}), 404
+            
+            if req['user_id'] != user_id:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+            
+            # Soft delete
+            cursor.execute("UPDATE requests SET is_deleted_by_user = 1 WHERE id = %s", (request_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Request deleted successfully'
+        })
+        
+    except Exception as e:
+        print(f"DB Error (Delete Request): {e}")
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+# ==========================================
+# Initialize Database & Run App
+# ==========================================
+if __name__ == '__main__':
+    check_and_update_db()
+    app.run(host='0.0.0.0', port=8080, debug=True)
